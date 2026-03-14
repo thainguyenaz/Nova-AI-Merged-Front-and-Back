@@ -167,8 +167,36 @@
       },
       "serviceCategories": ["personal_training", "group_class", "assessment", "wellness", "nutrition"],
       "inventoryLabels": ["Equipment", "Supplements & Nutrition", "Apparel & Accessories", "Recovery Tools", "Studio Supplies"]
+    },
+    "peptide_hrt": {
+      "label": "Peptides / HRT",
+      "icon": "🧬",
+      "color": "#06B6D4",
+      "description": "Peptide therapy & hormone replacement",
+      "terminology": {
+        "client": "Patient",
+        "clients": "Patients",
+        "appointment": "Consultation",
+        "appointments": "Consultations",
+        "service": "Protocol",
+        "services": "Protocols",
+        "provider": "Provider",
+        "providers": "Providers",
+        "inventory": "Compound & HRT Inventory",
+        "inventoryItem": "Compound / Hormone",
+        "notes": "Clinical Notes",
+        "encounter": "Consultation",
+        "encounters": "Consultation History",
+        "schedule": "Provider Schedule",
+        "room": "Exam Room",
+        "checkout": "Patient Checkout",
+        "intake": "Patient Intake",
+        "chart": "Patient Chart"
+      },
+      "serviceCategories": ["peptide_therapy", "hormone_replacement", "iv_therapy", "diagnostics", "wellness"],
+      "inventoryLabels": ["Peptides", "Hormones & HRT", "Vitamins & Injectables", "Injection Supplies", "Lab Supplies"]
     }
   },
   "defaultIndustry": "medspa",
-  "validValues": ["medspa", "barber", "salon", "spa", "clinic", "fitness"]
+  "validValues": ["medspa", "barber", "salon", "spa", "clinic", "fitness", "peptide_hrt"]
 }

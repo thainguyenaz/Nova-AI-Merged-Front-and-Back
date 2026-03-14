@@ -349,12 +349,13 @@
 
     // Maps selector keys to bundle-internal keys (what React bundle uses internally)
     const BUNDLE_KEY_MAP = {
-      'spa':     'day_spa',
-      'barber':  'barbershop',
-      'salon':   'hair_salon',
-      'clinic':  'esthetics',
-      'fitness': 'weight_loss',
-      'medspa':  'medspa'
+      'spa':         'day_spa',
+      'barber':      'barbershop',
+      'salon':       'hair_salon',
+      'clinic':      'esthetics',
+      'fitness':     'weight_loss',
+      'medspa':      'medspa',
+      'peptide_hrt': 'peptide_hrt'
     };
 
     async function confirmSelection() {
@@ -417,7 +418,8 @@
           { value: 'salon', label: 'Hair Salon', icon: '💇', color: '#EC4899', description: 'Full-service hair salon', terminology: { client: 'Client', provider: 'Stylist', service: 'Service', appointment: 'Appointment', inventory: 'Color & Product Inventory' } },
           { value: 'spa', label: 'Day Spa', icon: '🧖', color: '#059669', description: 'Day spa & wellness services', terminology: { client: 'Guest', provider: 'Therapist', service: 'Treatment', appointment: 'Reservation', inventory: 'Retail & Supply Inventory' } },
           { value: 'clinic', label: 'Medical Clinic', icon: '🏥', color: '#DC2626', description: 'Primary care & medical practice', terminology: { client: 'Patient', provider: 'Physician', service: 'Procedure', appointment: 'Appointment', inventory: 'Medical Supply Inventory' } },
-          { value: 'fitness', label: 'Fitness Studio', icon: '💪', color: '#D97706', description: 'Personal training & fitness', terminology: { client: 'Member', provider: 'Trainer', service: 'Program', appointment: 'Session', inventory: 'Equipment & Supply Inventory' } }
+          { value: 'fitness', label: 'Fitness Studio', icon: '💪', color: '#D97706', description: 'Personal training & fitness', terminology: { client: 'Member', provider: 'Trainer', service: 'Program', appointment: 'Session', inventory: 'Equipment & Supply Inventory' } },
+          { value: 'peptide_hrt', label: 'Peptides / HRT', icon: '🧬', color: '#06B6D4', description: 'Peptide therapy & hormone replacement', terminology: { client: 'Patient', provider: 'Provider', service: 'Protocol', appointment: 'Consultation', inventory: 'Compound & HRT Inventory' } }
         ]);
       }
     }
