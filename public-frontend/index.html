@@ -17,6 +17,183 @@
   <body>
     <div id="root"></div>
 
+    <!-- Nova Demo Inventory Override — injects industry-specific inventory data -->
+    <script>
+    (function() {
+      // Maps selector keys (spa, barber, salon) -> bundle internal keys (day_spa, barbershop, hair_salon)
+      var INDUSTRY_KEY_MAP = {
+        'spa':     'day_spa',
+        'barber':  'barbershop',
+        'salon':   'hair_salon',
+        'clinic':  'esthetics',
+        'fitness': 'weight_loss',
+        // Pass-through bundle keys
+        'medspa':      'medspa',
+        'day_spa':     'day_spa',
+        'barbershop':  'barbershop',
+        'hair_salon':  'hair_salon',
+        'nail_salon':  'nail_salon',
+        'esthetics':   'esthetics',
+        'weight_loss': 'weight_loss',
+        'peptide_hrt': 'peptide_hrt'
+      };
+
+      // nova_industry_bundle_key is set by selector.html when industry is chosen
+      // nova_industry_type is the raw key; map it to bundle internal key
+      var rawType = localStorage.getItem('nova_industry_type') || 'medspa';
+      var bundleType = localStorage.getItem('nova_industry_bundle_key') || INDUSTRY_KEY_MAP[rawType] || rawType;
+
+      // Pre-populate __NOVA_BIZ__ primaryType so inventory patch fires correctly.
+      // React sets window.__NOVA_BIZ__ after the user completes onboarding.
+      // When using the industry-selector flow, we intercept the setter to enforce the
+      // selected industry type if React would default back to "medspa".
+      if (bundleType && bundleType !== 'medspa') {
+        var _novaBizValue = null;
+        Object.defineProperty(window, '__NOVA_BIZ__', {
+          configurable: true,
+          enumerable: true,
+          get: function() { return _novaBizValue; },
+          set: function(v) {
+            // Only override if React didn't already get a specific industry from onboarding
+            if (v && (v.primaryType === 'medspa' || !v.primaryType)) {
+              v = Object.assign({}, v, { primaryType: bundleType, types: [bundleType] });
+            }
+            _novaBizValue = v;
+          }
+        });
+      }
+
+      // Industry-specific demo inventory for the inventory module
+      window.__NOVA_DEMO_INVENTORY = {
+        day_spa: [
+          {id:"sp01",name:"Massage Oil — Lavender 1L",brand:"Biotone",cat:"💆 Massage Supplies",sku:"MASS-LAV-1L",unit:"Bottle 1L",qty:8,reorder:3,cost:22,retail:45,lot:"BT-2024-A1",batch:"SP-24-A",exp:"2026-06-01",status:"ok",notes:"Best seller"},
+          {id:"sp02",name:"Massage Oil — Unscented 1L",brand:"Biotone",cat:"💆 Massage Supplies",sku:"MASS-UNS-1L",unit:"Bottle 1L",qty:6,reorder:3,cost:20,retail:40,lot:"BT-2024-A2",batch:"SP-24-B",exp:"2026-06-01",status:"ok",notes:""},
+          {id:"sp03",name:"Hot Stone Set (45 Basalt Stones)",brand:"InSPAration",cat:"🪨 Hot Stone Therapy",sku:"STONE-45",unit:"Set",qty:4,reorder:2,cost:85,retail:0,lot:"IS-2024-S1",batch:"HS-24-A",exp:"",status:"ok",notes:""},
+          {id:"sp04",name:"Facial Steamer Solution 500ml",brand:"Éminence",cat:"✨ Facial Supplies",sku:"STEAM-SOL",unit:"Bottle 500ml",qty:5,reorder:2,cost:18,retail:0,lot:"EM-2024-F1",batch:"FA-24-A",exp:"2026-01-15",status:"ok",notes:""},
+          {id:"sp05",name:"Hydrating Facial Mask (Clay) — 30 Pack",brand:"Éminence Organic",cat:"✨ Facial Supplies",sku:"MASK-CLAY-30",unit:"Pack 30",qty:4,reorder:2,cost:65,retail:0,lot:"EM-2024-M1",batch:"FA-24-B",exp:"2025-12-31",status:"ok",notes:""},
+          {id:"sp06",name:"Exfoliating Body Scrub 1kg",brand:"Cuccio",cat:"🛁 Body Treatment",sku:"SCRUB-1KG",unit:"Container 1kg",qty:6,reorder:2,cost:38,retail:72,lot:"CU-2024-B1",batch:"BT-24-A",exp:"2026-03-01",status:"ok",notes:""},
+          {id:"sp07",name:"Body Wrap Seaweed Sheet — 50 Pack",brand:"La Mer",cat:"🛁 Body Treatment",sku:"WRAP-SEAW-50",unit:"Pack 50",qty:3,reorder:2,cost:55,retail:0,lot:"LM-2024-W1",batch:"BT-24-B",exp:"2026-05-01",status:"ok",notes:""},
+          {id:"sp08",name:"Aromatherapy Essential Oil — Eucalyptus 100ml",brand:"Edens Garden",cat:"🌿 Aromatherapy",sku:"AROM-EUC-100",unit:"Bottle 100ml",qty:10,reorder:4,cost:15,retail:28,lot:"EG-2024-A1",batch:"AR-24-A",exp:"2027-01-01",status:"ok",notes:""},
+          {id:"sp09",name:"Aromatherapy Essential Oil — Rose 30ml",brand:"Edens Garden",cat:"🌿 Aromatherapy",sku:"AROM-ROSE-30",unit:"Bottle 30ml",qty:8,reorder:3,cost:22,retail:42,lot:"EG-2024-A2",batch:"AR-24-B",exp:"2027-01-01",status:"ok",notes:"Premium"},
+          {id:"sp10",name:"Himalayan Salt Scrub 500g",brand:"Pure Body Naturals",cat:"🧂 Salt & Mineral",sku:"SALT-500G",unit:"Jar 500g",qty:7,reorder:3,cost:18,retail:35,lot:"PBN-2024-S1",batch:"SM-24-A",exp:"2026-08-01",status:"ok",notes:""},
+          {id:"sp11",name:"Disposable Spa Panties — 100 Pack",brand:"SpaGoddess",cat:"🧤 Disposables & PPE",sku:"DISP-PAN-100",unit:"Pack 100",qty:5,reorder:2,cost:24,retail:0,lot:"SG-2024-D1",batch:"PPE-24-A",exp:"",status:"ok",notes:""},
+          {id:"sp12",name:"Towel Warmer Deodorizer Tablets — 50 Pack",brand:"CleanScent",cat:"🧤 Disposables & PPE",sku:"TOWER-TAB-50",unit:"Pack 50",qty:4,reorder:2,cost:12,retail:0,lot:"CS-2024-T1",batch:"PPE-24-B",exp:"2026-10-01",status:"ok",notes:""},
+          {id:"sp13",name:"Facial Serum — Vitamin C 30ml",brand:"Éminence Organic",cat:"✨ Facial Supplies",sku:"SER-VITC-30",unit:"Bottle 30ml",qty:6,reorder:3,cost:48,retail:95,lot:"EM-2024-S1",batch:"FA-24-C",exp:"2026-02-28",status:"ok",notes:"Retail + In-treatment"},
+          {id:"sp14",name:"Candles — Spa Ambiance Set (12)",brand:"Archipelago",cat:"🌿 Aromatherapy",sku:"CAN-SPA-12",unit:"Set 12",qty:3,reorder:2,cost:55,retail:88,lot:"AR-2024-C1",batch:"AR-24-C",exp:"",status:"ok",notes:""},
+          {id:"sp15",name:"Hydrotherapy Salts 2kg",brand:"Dr. Teals",cat:"🧂 Salt & Mineral",sku:"HYDRO-SALT-2K",unit:"Bag 2kg",qty:5,reorder:2,cost:20,retail:38,lot:"DT-2024-H1",batch:"SM-24-B",exp:"2027-01-01",status:"ok",notes:""}
+        ],
+
+        barbershop: [
+          {id:"bb01",name:"Clippers — Wahl Senior",brand:"Wahl",cat:"✂️ Cutting Equipment",sku:"CLIP-WAHL-SR",unit:"Unit",qty:4,reorder:2,cost:75,retail:0,lot:"WH-2024-C1",batch:"EQ-24-A",exp:"",status:"ok",notes:"Main clipper"},
+          {id:"bb02",name:"Clippers — Andis Master",brand:"Andis",cat:"✂️ Cutting Equipment",sku:"CLIP-AND-MST",unit:"Unit",qty:3,reorder:1,cost:90,retail:0,lot:"AN-2024-C1",batch:"EQ-24-B",exp:"",status:"ok",notes:"Fade specialist"},
+          {id:"bb03",name:"Trimmer Blades — Replacement Set",brand:"Wahl",cat:"✂️ Cutting Equipment",sku:"BLADE-WAHL-SET",unit:"Set 6",qty:8,reorder:3,cost:28,retail:0,lot:"WH-2024-B1",batch:"EQ-24-C",exp:"",status:"ok",notes:""},
+          {id:"bb04",name:"Shaving Cream — Classic Lather 400g",brand:"Taylor of Old Bond Street",cat:"🪒 Shave Supplies",sku:"SHAVE-CRM-400",unit:"Tub 400g",qty:10,reorder:4,cost:22,retail:38,lot:"TB-2024-S1",batch:"SH-24-A",exp:"2026-09-01",status:"ok",notes:"Hot towel shave"},
+          {id:"bb05",name:"Pre-Shave Oil 100ml",brand:"Jack Black",cat:"🪒 Shave Supplies",sku:"PRESHAVE-100",unit:"Bottle 100ml",qty:8,reorder:3,cost:18,retail:32,lot:"JB-2024-P1",batch:"SH-24-B",exp:"2026-12-01",status:"ok",notes:""},
+          {id:"bb06",name:"Aftershave Balm 150ml",brand:"Proraso",cat:"🪒 Shave Supplies",sku:"AFTSV-BAL-150",unit:"Bottle 150ml",qty:12,reorder:4,cost:14,retail:28,lot:"PR-2024-A1",batch:"SH-24-C",exp:"2026-11-01",status:"ok",notes:""},
+          {id:"bb07",name:"Beard Oil — Cedarwood 60ml",brand:"Beardbrand",cat:"🧔 Beard Care",sku:"BRDOIL-CED-60",unit:"Bottle 60ml",qty:15,reorder:5,cost:16,retail:30,lot:"BB-2024-O1",batch:"BC-24-A",exp:"2026-08-01",status:"ok",notes:"Best seller"},
+          {id:"bb08",name:"Beard Balm 60g",brand:"Beardbrand",cat:"🧔 Beard Care",sku:"BRDBM-60G",unit:"Tin 60g",qty:12,reorder:4,cost:18,retail:34,lot:"BB-2024-B1",batch:"BC-24-B",exp:"2026-08-01",status:"ok",notes:""},
+          {id:"bb09",name:"Beard Comb — Kent",brand:"Kent",cat:"🧔 Beard Care",sku:"BRD-COMB-KENT",unit:"Unit",qty:20,reorder:5,cost:8,retail:18,lot:"KT-2024-C1",batch:"BC-24-C",exp:"",status:"ok",notes:"Retail"},
+          {id:"bb10",name:"Pomade — High Hold 120g",brand:"Layrite",cat:"💈 Styling Products",sku:"POM-HH-120",unit:"Jar 120g",qty:18,reorder:6,cost:14,retail:26,lot:"LY-2024-P1",batch:"ST-24-A",exp:"2027-01-01",status:"ok",notes:"Top seller"},
+          {id:"bb11",name:"Hair Clay — Matte Finish 90g",brand:"Redken Brews",cat:"💈 Styling Products",sku:"CLAY-MATTE-90",unit:"Jar 90g",qty:14,reorder:5,cost:18,retail:32,lot:"RK-2024-C1",batch:"ST-24-B",exp:"2026-10-01",status:"ok",notes:""},
+          {id:"bb12",name:"Neck Strips — 5 Rolls",brand:"Fromm",cat:"🧤 Disposables & PPE",sku:"NECK-5R",unit:"Pack 5 Rolls",qty:10,reorder:3,cost:12,retail:0,lot:"FR-2024-N1",batch:"PPE-24-A",exp:"",status:"ok",notes:""},
+          {id:"bb13",name:"Cape — Barber Cutting Cape",brand:"Diane",cat:"🧤 Disposables & PPE",sku:"CAPE-BARB",unit:"Unit",qty:8,reorder:2,cost:15,retail:0,lot:"DI-2024-CP1",batch:"PPE-24-B",exp:"",status:"ok",notes:""},
+          {id:"bb14",name:"Clipper Oil 120ml",brand:"Andis",cat:"✂️ Cutting Equipment",sku:"CLIP-OIL-120",unit:"Bottle 120ml",qty:6,reorder:2,cost:8,retail:0,lot:"AN-2024-OIL1",batch:"EQ-24-D",exp:"",status:"ok",notes:"Equipment maintenance"},
+          {id:"bb15",name:"Straight Razor — Dovo",brand:"Dovo",cat:"🪒 Shave Supplies",sku:"RZOR-DOVO",unit:"Unit",qty:3,reorder:1,cost:65,retail:0,lot:"DV-2024-R1",batch:"SH-24-D",exp:"",status:"ok",notes:"Hot shave service"}
+        ],
+
+        hair_salon: [
+          {id:"hs01",name:"Permanent Hair Color — Redken Shades EQ",brand:"Redken",cat:"🎨 Color & Lightener",sku:"CLR-REK-SEQ",unit:"Pack 12 Colors",qty:5,reorder:2,cost:85,retail:0,lot:"RK-2024-C1",batch:"CLR-24-A",exp:"2026-06-01",status:"ok",notes:"Semi-permanent"},
+          {id:"hs02",name:"Bleach Powder 500g",brand:"L'Oréal Blond Studio",cat:"🎨 Color & Lightener",sku:"BLC-LOR-500",unit:"Bag 500g",qty:8,reorder:3,cost:42,retail:0,lot:"LOR-2024-B1",batch:"CLR-24-B",exp:"2026-03-01",status:"ok",notes:"For balayage & highlights"},
+          {id:"hs03",name:"Developer 20Vol — 1L",brand:"Wella",cat:"🎨 Color & Lightener",sku:"DEV-20V-1L",unit:"Bottle 1L",qty:10,reorder:4,cost:12,retail:0,lot:"WL-2024-D1",batch:"CLR-24-C",exp:"2026-12-01",status:"ok",notes:""},
+          {id:"hs04",name:"Developer 30Vol — 1L",brand:"Wella",cat:"🎨 Color & Lightener",sku:"DEV-30V-1L",unit:"Bottle 1L",qty:8,reorder:3,cost:12,retail:0,lot:"WL-2024-D2",batch:"CLR-24-D",exp:"2026-12-01",status:"ok",notes:""},
+          {id:"hs05",name:"Toning Shampoo — Purple 1L",brand:"Redken",cat:"🧴 Shampoo & Conditioner",sku:"SHMP-PURP-1L",unit:"Bottle 1L",qty:6,reorder:2,cost:28,retail:38,lot:"RK-2024-S1",batch:"SC-24-A",exp:"2026-10-01",status:"ok",notes:"Retail + salon use"},
+          {id:"hs06",name:"Moisturizing Conditioner 1L",brand:"Olaplex",cat:"🧴 Shampoo & Conditioner",sku:"COND-OLP-1L",unit:"Bottle 1L",qty:5,reorder:2,cost:55,retail:68,lot:"OL-2024-C1",batch:"SC-24-B",exp:"2026-08-01",status:"ok",notes:"Bond repair"},
+          {id:"hs07",name:"Keratin Treatment Kit",brand:"GK Hair",cat:"💆 Chemical Treatments",sku:"KER-GK-KIT",unit:"Kit",qty:4,reorder:2,cost:85,retail:0,lot:"GK-2024-K1",batch:"CT-24-A",exp:"2025-12-31",status:"ok",notes:"Per treatment"},
+          {id:"hs08",name:"Foil Sheets — 500 Pack",brand:"Fromm",cat:"🛠️ Salon Supplies",sku:"FOIL-500",unit:"Pack 500",qty:8,reorder:3,cost:18,retail:0,lot:"FR-2024-F1",batch:"SS-24-A",exp:"",status:"ok",notes:"Highlighting foil"},
+          {id:"hs09",name:"Balayage Board & Brush Set",brand:"Tint Bowl",cat:"🛠️ Salon Supplies",sku:"BALY-BOARD",unit:"Set",qty:4,reorder:2,cost:22,retail:0,lot:"TB-2024-B1",batch:"SS-24-B",exp:"",status:"ok",notes:""},
+          {id:"hs10",name:"Heat Protectant Spray 250ml",brand:"Chi",cat:"💨 Styling Products",sku:"HEAT-PROT-250",unit:"Bottle 250ml",qty:12,reorder:4,cost:16,retail:28,lot:"CH-2024-H1",batch:"SP-24-A",exp:"2026-09-01",status:"ok",notes:""},
+          {id:"hs11",name:"Hairspray — Flexible Hold 400ml",brand:"Kenra Platinum",cat:"💨 Styling Products",sku:"HSPRY-FLEX-400",unit:"Can 400ml",qty:10,reorder:4,cost:18,retail:30,lot:"KP-2024-HS1",batch:"SP-24-B",exp:"2026-08-01",status:"ok",notes:""},
+          {id:"hs12",name:"Bond Builder Treatment (Olaplex 3)",brand:"Olaplex",cat:"💆 Chemical Treatments",sku:"OLP-NO3-100",unit:"Bottle 100ml",qty:15,reorder:5,cost:28,retail:44,lot:"OL-2024-B1",batch:"CT-24-B",exp:"2026-10-01",status:"ok",notes:"Take-home retail"},
+          {id:"hs13",name:"Gloves — Nitrile Medium 100 Pack",brand:"Ammex",cat:"🧤 Disposables & PPE",sku:"GLOVE-NIT-M-100",unit:"Box 100",qty:6,reorder:2,cost:18,retail:0,lot:"AM-2024-G1",batch:"PPE-24-A",exp:"",status:"ok",notes:"Color application"},
+          {id:"hs14",name:"Salon Cape — Waterproof",brand:"Comfortel",cat:"🛠️ Salon Supplies",sku:"CAPE-WP",unit:"Unit",qty:8,reorder:2,cost:25,retail:0,lot:"CF-2024-C1",batch:"SS-24-C",exp:"",status:"ok",notes:""},
+          {id:"hs15",name:"Toning Gloss — Clear 60ml",brand:"Redken",cat:"🎨 Color & Lightener",sku:"GLOS-CLR-60",unit:"Tube 60ml",qty:20,reorder:6,cost:10,retail:0,lot:"RK-2024-G1",batch:"CLR-24-E",exp:"2026-04-01",status:"ok",notes:"Gloss treatment"}
+        ],
+
+        nail_salon: [
+          {id:"ns01",name:"Gel Polish Set — OPI GelColor (36 Colors)",brand:"OPI",cat:"💅 Gel Polish",sku:"GEL-OPI-36",unit:"Set 36",qty:3,reorder:1,cost:280,retail:0,lot:"OPI-2024-G1",batch:"NL-24-A",exp:"2026-06-01",status:"ok",notes:"Core collection"},
+          {id:"ns02",name:"Acrylic Powder — Clear 200g",brand:"Young Nails",cat:"🔮 Acrylic System",sku:"ACR-CLR-200",unit:"Jar 200g",qty:6,reorder:3,cost:32,retail:0,lot:"YN-2024-A1",batch:"AC-24-A",exp:"2026-10-01",status:"ok",notes:""},
+          {id:"ns03",name:"Acrylic Powder — Pink 200g",brand:"Young Nails",cat:"🔮 Acrylic System",sku:"ACR-PNK-200",unit:"Jar 200g",qty:6,reorder:3,cost:32,retail:0,lot:"YN-2024-A2",batch:"AC-24-B",exp:"2026-10-01",status:"ok",notes:""},
+          {id:"ns04",name:"Acrylic Monomer 500ml",brand:"NSI Nails",cat:"🔮 Acrylic System",sku:"MONO-NSI-500",unit:"Bottle 500ml",qty:5,reorder:2,cost:28,retail:0,lot:"NS-2024-M1",batch:"AC-24-C",exp:"2026-08-01",status:"ok",notes:"EMA formula"},
+          {id:"ns05",name:"Dip Powder Set — SNS (24 Colors)",brand:"SNS",cat:"💍 Dip Powder",sku:"DIP-SNS-24",unit:"Set 24",qty:2,reorder:1,cost:185,retail:0,lot:"SNS-2024-D1",batch:"DP-24-A",exp:"2026-12-01",status:"ok",notes:""},
+          {id:"ns06",name:"UV/LED Nail Lamp 48W",brand:"MelodySusie",cat:"💡 Equipment",sku:"LAMP-UV-48W",unit:"Unit",qty:4,reorder:1,cost:45,retail:0,lot:"MS-2024-L1",batch:"EQ-24-A",exp:"",status:"ok",notes:""},
+          {id:"ns07",name:"Nail Files — 100/180 Grit (50 Pack)",brand:"Royal Nails",cat:"🔧 Tools & Files",sku:"FILE-100-180",unit:"Pack 50",qty:10,reorder:4,cost:12,retail:0,lot:"RN-2024-F1",batch:"TL-24-A",exp:"",status:"ok",notes:""},
+          {id:"ns08",name:"Cuticle Oil — Apricot 15ml",brand:"CND",cat:"🌿 Cuticle & Skin Care",sku:"CUTOI-APR-15",unit:"Bottle 15ml",qty:24,reorder:8,cost:8,retail:16,lot:"CND-2024-CO1",batch:"SC-24-A",exp:"2026-09-01",status:"ok",notes:"Retail bottle"},
+          {id:"ns09",name:"Nail Primer — Acid-Free 15ml",brand:"Young Nails",cat:"🔮 Acrylic System",sku:"PRIME-AF-15",unit:"Bottle 15ml",qty:8,reorder:3,cost:14,retail:0,lot:"YN-2024-P1",batch:"AC-24-D",exp:"2026-06-01",status:"ok",notes:""},
+          {id:"ns10",name:"Gel Base Coat 15ml",brand:"Gelish",cat:"💅 Gel Polish",sku:"GEL-BASE-15",unit:"Bottle 15ml",qty:10,reorder:4,cost:18,retail:0,lot:"GL-2024-BC1",batch:"NL-24-B",exp:"2026-08-01",status:"ok",notes:""},
+          {id:"ns11",name:"Gel Top Coat 15ml",brand:"Gelish",cat:"💅 Gel Polish",sku:"GEL-TOP-15",unit:"Bottle 15ml",qty:10,reorder:4,cost:18,retail:0,lot:"GL-2024-TC1",batch:"NL-24-C",exp:"2026-08-01",status:"ok",notes:""},
+          {id:"ns12",name:"Lint-Free Wipes — 200 Pack",brand:"Lamora",cat:"🧤 Disposables & PPE",sku:"WIPE-LF-200",unit:"Pack 200",qty:8,reorder:3,cost:12,retail:0,lot:"LM-2024-W1",batch:"PPE-24-A",exp:"",status:"ok",notes:"Gel removal"},
+          {id:"ns13",name:"Acetone — 1L",brand:"KDS",cat:"🧴 Removers & Cleaners",sku:"ACE-KDS-1L",unit:"Bottle 1L",qty:6,reorder:2,cost:10,retail:0,lot:"KD-2024-A1",batch:"RC-24-A",exp:"2027-01-01",status:"ok",notes:"Soak-off"},
+          {id:"ns14",name:"Electric Nail Drill",brand:"Makartt",cat:"💡 Equipment",sku:"DRILL-MAK",unit:"Unit",qty:3,reorder:1,cost:65,retail:0,lot:"MK-2024-D1",batch:"EQ-24-B",exp:"",status:"ok",notes:""},
+          {id:"ns15",name:"Hand Lotion — Eucalyptus 1L",brand:"OPI",cat:"🌿 Cuticle & Skin Care",sku:"LOTION-EUC-1L",unit:"Pump 1L",qty:4,reorder:2,cost:35,retail:0,lot:"OPI-2024-L1",batch:"SC-24-B",exp:"2026-07-01",status:"ok",notes:"Station use"}
+        ],
+
+        esthetics: [
+          {id:"es01",name:"Facial Cleanser — Enzyme 500ml",brand:"Éminence Organic",cat:"✨ Facial Products",sku:"CLNSR-ENZ-500",unit:"Bottle 500ml",qty:6,reorder:2,cost:48,retail:72,lot:"EM-2024-C1",batch:"FP-24-A",exp:"2026-05-01",status:"ok",notes:"Professional size"},
+          {id:"es02",name:"Glycolic Acid Peel 30% 60ml",brand:"PCA Skin",cat:"🧪 Chemical Peels",sku:"PEEL-GLYC-30",unit:"Bottle 60ml",qty:4,reorder:2,cost:68,retail:0,lot:"PCA-2024-G1",batch:"CP-24-A",exp:"2025-11-30",status:"ok",notes:"Refrigerate after open"},
+          {id:"es03",name:"Salicylic Acid Peel 20% 60ml",brand:"PCA Skin",cat:"🧪 Chemical Peels",sku:"PEEL-SAL-20",unit:"Bottle 60ml",qty:4,reorder:2,cost:58,retail:0,lot:"PCA-2024-S1",batch:"CP-24-B",exp:"2025-11-30",status:"ok",notes:"Acne-prone skin"},
+          {id:"es04",name:"Microdermabrasion Crystals 500g",brand:"Dermalogica",cat:"🔬 Microdermabrasion",sku:"MDM-CRY-500",unit:"Jar 500g",qty:3,reorder:2,cost:45,retail:0,lot:"DL-2024-M1",batch:"MD-24-A",exp:"2026-10-01",status:"ok",notes:""},
+          {id:"es05",name:"Hyaluronic Acid Serum 30ml",brand:"SkinCeuticals",cat:"✨ Facial Products",sku:"SER-HA-30",unit:"Bottle 30ml",qty:8,reorder:3,cost:55,retail:95,lot:"SC-2024-H1",batch:"FP-24-B",exp:"2026-03-01",status:"ok",notes:"Retail + treatment"},
+          {id:"es06",name:"Retinol Serum 1% 30ml",brand:"SkinMedica",cat:"✨ Facial Products",sku:"SER-RET-1",unit:"Bottle 30ml",qty:6,reorder:2,cost:65,retail:105,lot:"SM-2024-R1",batch:"FP-24-C",exp:"2026-01-15",status:"ok",notes:""},
+          {id:"es07",name:"Wax — Soft Body 400g",brand:"GiGi",cat:"🪮 Waxing Supplies",sku:"WAX-SOFT-400",unit:"Can 400g",qty:8,reorder:3,cost:14,retail:0,lot:"GG-2024-W1",batch:"WX-24-A",exp:"2026-12-01",status:"ok",notes:""},
+          {id:"es08",name:"Wax Strips — 100 Pack",brand:"GiGi",cat:"🪮 Waxing Supplies",sku:"WAX-STRIP-100",unit:"Pack 100",qty:10,reorder:4,cost:8,retail:0,lot:"GG-2024-WS1",batch:"WX-24-B",exp:"",status:"ok",notes:""},
+          {id:"es09",name:"Dermaplaning Blades — 10 Pack",brand:"Schick",cat:"🔪 Dermaplaning",sku:"DERMA-BLD-10",unit:"Pack 10",qty:6,reorder:2,cost:18,retail:0,lot:"SK-2024-D1",batch:"DP-24-A",exp:"",status:"ok",notes:"Sterile, single use"},
+          {id:"es10",name:"LED Light Therapy Device",brand:"Celluma",cat:"💡 Devices",sku:"LED-CELL",unit:"Unit",qty:2,reorder:1,cost:2200,retail:0,lot:"CL-2024-L1",batch:"DEV-24-A",exp:"",status:"ok",notes:"Anti-aging & acne"},
+          {id:"es11",name:"Lash Lift Kit",brand:"Elleeplex",cat:"👁️ Lash & Brow",sku:"LASH-LIFT-KIT",unit:"Kit 30 Uses",qty:3,reorder:1,cost:55,retail:0,lot:"EL-2024-L1",batch:"LB-24-A",exp:"2026-06-01",status:"ok",notes:""},
+          {id:"es12",name:"Brow Lamination Kit",brand:"RefectoCil",cat:"👁️ Lash & Brow",sku:"BROW-LAM-KIT",unit:"Kit 20 Uses",qty:3,reorder:1,cost:45,retail:0,lot:"RC-2024-B1",batch:"LB-24-B",exp:"2026-04-01",status:"ok",notes:""},
+          {id:"es13",name:"Sheet Masks — Brightening (50 Pack)",brand:"Dr. Jart",cat:"✨ Facial Products",sku:"SMASK-BRGT-50",unit:"Pack 50",qty:4,reorder:2,cost:55,retail:0,lot:"DJ-2024-M1",batch:"FP-24-D",exp:"2026-08-01",status:"ok",notes:"In-treatment use"},
+          {id:"es14",name:"Spray Tan Solution — Dark 1L",brand:"MineTan",cat:"🌿 Spray Tan",sku:"SPRAY-TAN-D-1L",unit:"Bottle 1L",qty:5,reorder:2,cost:38,retail:0,lot:"MT-2024-S1",batch:"ST-24-A",exp:"2026-02-01",status:"ok",notes:""},
+          {id:"es15",name:"Disposable Gloves — Nitrile (100 Pack)",brand:"Ammex",cat:"🧤 Disposables & PPE",sku:"GLOVE-NIT-100",unit:"Box 100",qty:6,reorder:2,cost:18,retail:0,lot:"AM-2024-G1",batch:"PPE-24-A",exp:"",status:"ok",notes:""}
+        ],
+
+        weight_loss: [
+          {id:"wl01",name:"Semaglutide 2mg/ml (5ml Vial)",brand:"Compounded",cat:"💉 GLP-1 Medications",sku:"SEMA-2MG-5ML",unit:"Vial 5ml",qty:20,reorder:8,cost:85,retail:350,lot:"CMP-2024-S1",batch:"GLP-24-A",exp:"2025-12-31",status:"ok",notes:"Refrigerate 2-8°C"},
+          {id:"wl02",name:"Tirzepatide 5mg/ml (4ml Vial)",brand:"Compounded",cat:"💉 GLP-1 Medications",sku:"TIRZ-5MG-4ML",unit:"Vial 4ml",qty:15,reorder:6,cost:110,retail:420,lot:"CMP-2024-T1",batch:"GLP-24-B",exp:"2025-12-31",status:"ok",notes:"Refrigerate"},
+          {id:"wl03",name:"B12 Injection 1000mcg/ml (10ml Vial)",brand:"Compounded",cat:"💊 Vitamins & Supplements",sku:"B12-1MG-10ML",unit:"Vial 10ml",qty:12,reorder:4,cost:22,retail:65,lot:"CMP-2024-B1",batch:"VIT-24-A",exp:"2025-10-31",status:"ok",notes:""},
+          {id:"wl04",name:"Lipotropic MIC Injection (10ml Vial)",brand:"Compounded",cat:"💉 Lipotropic Injections",sku:"MIC-LIP-10ML",unit:"Vial 10ml",qty:10,reorder:4,cost:28,retail:65,lot:"CMP-2024-M1",batch:"LIP-24-A",exp:"2025-11-30",status:"ok",notes:"Methionine-Inositol-Choline"},
+          {id:"wl05",name:"Protein Shake — Meal Replacement (30 Servings)",brand:"Premier Protein",cat:"🥤 Nutritional Supplements",sku:"PROT-MRP-30S",unit:"Bag 30 Srv",qty:20,reorder:6,cost:38,retail:68,lot:"PP-2024-P1",batch:"NS-24-A",exp:"2026-03-01",status:"ok",notes:""},
+          {id:"wl06",name:"Omega-3 Fish Oil 1000mg (90 Caps)",brand:"Nordic Naturals",cat:"💊 Vitamins & Supplements",sku:"OMEGA3-90C",unit:"Bottle 90 Caps",qty:15,reorder:5,cost:22,retail:42,lot:"NN-2024-O1",batch:"VIT-24-B",exp:"2026-06-01",status:"ok",notes:""},
+          {id:"wl07",name:"InBody 270 Body Composition Supplies",brand:"InBody",cat:"📊 Diagnostic Supplies",sku:"INBODY-270-SUP",unit:"Kit",qty:5,reorder:2,cost:45,retail:80,lot:"IB-2024-S1",batch:"DX-24-A",exp:"",status:"ok",notes:"Electrode pads"},
+          {id:"wl08",name:"Syringes 1ml Insulin — 100 Pack",brand:"BD",cat:"🔬 Injection Supplies",sku:"SYR-INS-1ML-100",unit:"Box 100",qty:8,reorder:3,cost:25,retail:0,lot:"BD-2024-S1",batch:"INJ-24-A",exp:"2027-01-01",status:"ok",notes:""},
+          {id:"wl09",name:"Needles 31G x 5/16 — 100 Pack",brand:"BD",cat:"🔬 Injection Supplies",sku:"NDL-31G-100",unit:"Box 100",qty:10,reorder:4,cost:18,retail:0,lot:"BD-2024-N1",batch:"INJ-24-B",exp:"2027-01-01",status:"ok",notes:"Subcut injection"},
+          {id:"wl10",name:"Multivitamin Daily — 60 Caps",brand:"Thorne",cat:"💊 Vitamins & Supplements",sku:"MULTI-60C",unit:"Bottle 60 Caps",qty:12,reorder:4,cost:28,retail:52,lot:"TH-2024-M1",batch:"VIT-24-C",exp:"2026-10-01",status:"ok",notes:""},
+          {id:"wl11",name:"DEXA Scan Prep Supplies",brand:"",cat:"📊 Diagnostic Supplies",sku:"DEXA-PREP",unit:"Kit",qty:4,reorder:2,cost:15,retail:0,lot:"",batch:"DX-24-B",exp:"",status:"ok",notes:"Gown, positioning pads"},
+          {id:"wl12",name:"Electrolyte Powder — 60 Servings",brand:"LMNT",cat:"🥤 Nutritional Supplements",sku:"ELEC-LMNT-60S",unit:"Box 60 Srv",qty:15,reorder:5,cost:32,retail:58,lot:"LM-2024-E1",batch:"NS-24-B",exp:"2026-12-01",status:"ok",notes:""},
+          {id:"wl13",name:"Alcohol Wipes — 100 Pack",brand:"BD",cat:"🧤 Disposables & PPE",sku:"ALCWIPE-100",unit:"Box 100",qty:10,reorder:4,cost:8,retail:0,lot:"BD-2024-AW1",batch:"PPE-24-A",exp:"2027-01-01",status:"ok",notes:"Pre-injection prep"},
+          {id:"wl14",name:"Sharps Container 1.4L",brand:"BD",cat:"🧤 Disposables & PPE",sku:"SHARP-1.4L",unit:"Unit",qty:6,reorder:2,cost:5,retail:0,lot:"BD-2024-SC1",batch:"PPE-24-B",exp:"",status:"ok",notes:"Biohazard disposal"},
+          {id:"wl15",name:"Blood Glucose Monitor Kit",brand:"Contour Next",cat:"📊 Diagnostic Supplies",sku:"BGM-KIT",unit:"Kit",qty:4,reorder:2,cost:35,retail:65,lot:"CN-2024-BG1",batch:"DX-24-C",exp:"",status:"ok",notes:"Metabolic monitoring"}
+        ],
+
+        peptide_hrt: [
+          {id:"ph01",name:"BPC-157 5mg Vial",brand:"Compounded",cat:"🧬 Peptide Therapy",sku:"BPC157-5MG",unit:"Vial 5mg",qty:15,reorder:5,cost:55,retail:180,lot:"CMP-2024-BP1",batch:"PEP-24-A",exp:"2025-12-31",status:"ok",notes:"Refrigerate 2-8°C"},
+          {id:"ph02",name:"Sermorelin 9mg Vial",brand:"Compounded",cat:"🧬 Peptide Therapy",sku:"SERM-9MG",unit:"Vial 9mg",qty:12,reorder:4,cost:65,retail:220,lot:"CMP-2024-SE1",batch:"PEP-24-B",exp:"2025-11-30",status:"ok",notes:"GH secretagogue"},
+          {id:"ph03",name:"Ipamorelin/CJC-1295 Blend Vial",brand:"Compounded",cat:"🧬 Peptide Therapy",sku:"IPA-CJC-BLD",unit:"Vial 10mg",qty:10,reorder:4,cost:75,retail:280,lot:"CMP-2024-IC1",batch:"PEP-24-C",exp:"2025-12-31",status:"ok",notes:""},
+          {id:"ph04",name:"Testosterone Cypionate 200mg/ml (10ml Vial)",brand:"Compounded",cat:"⚗️ Hormone Replacement",sku:"TEST-CYP-200-10ML",unit:"Vial 10ml",qty:10,reorder:4,cost:68,retail:185,lot:"CMP-2024-TC1",batch:"HRT-24-A",exp:"2025-10-31",status:"ok",notes:"Refrigerate"},
+          {id:"ph05",name:"Testosterone Cream 200mg/ml (100g)",brand:"Compounded",cat:"⚗️ Hormone Replacement",sku:"TEST-CRM-200",unit:"Tube 100g",qty:8,reorder:3,cost:55,retail:145,lot:"CMP-2024-TCR1",batch:"HRT-24-B",exp:"2025-10-31",status:"ok",notes:"Transdermal"},
+          {id:"ph06",name:"DHEA 50mg Capsules (60 Cap)",brand:"Compounded",cat:"⚗️ Hormone Replacement",sku:"DHEA-50MG-60C",unit:"Bottle 60 Caps",qty:10,reorder:4,cost:22,retail:55,lot:"CMP-2024-D1",batch:"HRT-24-C",exp:"2026-04-01",status:"ok",notes:""},
+          {id:"ph07",name:"Progesterone 200mg Capsules (30 Cap)",brand:"Compounded",cat:"⚗️ Hormone Replacement",sku:"PROG-200MG-30C",unit:"Bottle 30 Caps",qty:8,reorder:3,cost:38,retail:85,lot:"CMP-2024-PR1",batch:"HRT-24-D",exp:"2026-02-28",status:"ok",notes:"Bioidentical"},
+          {id:"ph08",name:"Syringes 1ml + Needles Kit — 50 Pack",brand:"BD",cat:"🔬 Injection Supplies",sku:"SYR-NDL-KIT-50",unit:"Box 50",qty:12,reorder:4,cost:32,retail:0,lot:"BD-2024-SN1",batch:"INJ-24-A",exp:"2027-01-01",status:"ok",notes:""},
+          {id:"ph09",name:"Bacteriostatic Water 30ml",brand:"Hospira",cat:"🔬 Injection Supplies",sku:"BACT-H2O-30ML",unit:"Vial 30ml",qty:15,reorder:5,cost:18,retail:0,lot:"HO-2024-B1",batch:"INJ-24-B",exp:"2026-06-01",status:"ok",notes:"Peptide reconstitution"},
+          {id:"ph10",name:"Thymosin Beta-4 (TB-500) 5mg Vial",brand:"Compounded",cat:"🧬 Peptide Therapy",sku:"TB500-5MG",unit:"Vial 5mg",qty:8,reorder:3,cost:72,retail:240,lot:"CMP-2024-TB1",batch:"PEP-24-D",exp:"2025-12-31",status:"ok",notes:"Recovery peptide"},
+          {id:"ph11",name:"Lab Order Kit — Hormone Panel",brand:"LabCorp",cat:"🩸 Lab Supplies",sku:"LAB-HRM-KIT",unit:"Kit",qty:20,reorder:8,cost:12,retail:0,lot:"LC-2024-L1",batch:"LAB-24-A",exp:"",status:"ok",notes:"Test requisition pads"},
+          {id:"ph12",name:"Estradiol Cypionate 5mg/ml (5ml Vial)",brand:"Compounded",cat:"⚗️ Hormone Replacement",sku:"ESTR-CYP-5-5ML",unit:"Vial 5ml",qty:6,reorder:2,cost:55,retail:140,lot:"CMP-2024-EC1",batch:"HRT-24-E",exp:"2025-10-31",status:"ok",notes:"Female HRT"},
+          {id:"ph13",name:"Alcohol Wipes — 100 Pack",brand:"BD",cat:"🧤 Disposables & PPE",sku:"ALCWIPE-100",unit:"Box 100",qty:12,reorder:4,cost:8,retail:0,lot:"BD-2024-AW1",batch:"PPE-24-A",exp:"2027-01-01",status:"ok",notes:""},
+          {id:"ph14",name:"Sharps Container 1.4L",brand:"BD",cat:"🧤 Disposables & PPE",sku:"SHARP-1.4L",unit:"Unit",qty:6,reorder:2,cost:5,retail:0,lot:"BD-2024-SC1",batch:"PPE-24-B",exp:"",status:"ok",notes:""},
+          {id:"ph15",name:"MK-677 (Ibutamoren) 25mg Capsules (30 Cap)",brand:"Compounded",cat:"🧬 Peptide Therapy",sku:"MK677-25MG-30C",unit:"Bottle 30 Caps",qty:8,reorder:3,cost:45,retail:130,lot:"CMP-2024-MK1",batch:"PEP-24-E",exp:"2026-03-01",status:"ok",notes:"Oral GH secretagogue"}
+        ]
+      };
+    })();
+    </script>
+
     <!-- Nova Industry Context — injects industry terminology into window.novaIndustry -->
     <script>
     (function() {

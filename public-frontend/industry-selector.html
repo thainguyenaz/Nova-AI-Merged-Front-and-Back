@@ -347,10 +347,23 @@
       document.getElementById('confirmBtn').disabled = false;
     }
 
+    // Maps selector keys to bundle-internal keys (what React bundle uses internally)
+    const BUNDLE_KEY_MAP = {
+      'spa':     'day_spa',
+      'barber':  'barbershop',
+      'salon':   'hair_salon',
+      'clinic':  'esthetics',
+      'fitness': 'weight_loss',
+      'medspa':  'medspa'
+    };
+
     async function confirmSelection() {
       if (!selected) return;
 
       localStorage.setItem('nova_industry_type', selected);
+      // Also store the bundle-internal key so index.html injection works correctly
+      const bundleKey = BUNDLE_KEY_MAP[selected] || selected;
+      localStorage.setItem('nova_industry_bundle_key', bundleKey);
       const ind = industries.find(i => i.value === selected);
 
       // Try to save to backend if logged in
