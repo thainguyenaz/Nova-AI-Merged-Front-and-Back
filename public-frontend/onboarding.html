@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nova AI — Setup Wizard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #FAF9F7;
+      --surface:   #FFFFFF;
+      --border:    #E8E4DF;
+      --primary:   #2D3748;
+      --accent:    #C9956B;
+      --accent2:   #8B6F5E;
+      --muted:     #9B8EA0;
+      --danger:    #E53E3E;
+      --success:   #38A169;
+      --radius:    12px;
+      --shadow:    0 4px 24px rgba(0,0,0,0.07);
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOP NAV ──────────────────────────────── */
+    .top-nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .top-nav .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .top-nav .badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: var(--accent);
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── MAIN LAYOUT ──────────────────────────── */
+    .wizard-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 20px 60px;
+      gap: 32px;
+    }
+
+    /* ── SIDEBAR ──────────────────────────────── */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 0;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 40px;
+    }
+    .sidebar h3 {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0 20px 16px;
+    }
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      cursor: default;
+      transition: background 0.15s;
+    }
+    .step-item.active { background: #FDF5EE; }
+    .step-item.done .step-num { background: var(--success); color: #fff; }
+    .step-item.active .step-num { background: var(--accent); color: #fff; }
+    .step-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s, color 0.2s;
+    }
+    .step-label {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--primary);
+    }
+    .step-item.active .step-label { font-weight: 600; color: var(--accent); }
+    .step-item.done .step-label { color: var(--muted); }
+
+    /* ── MAIN PANEL ───────────────────────────── */
+    .main-panel {
+      flex: 1;
+      max-width: 680px;
+    }
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      box-shadow: var(--shadow);
+      display: none;
+    }
+    .step-card.active { display: block; }
+
+    .step-header { margin-bottom: 28px; }
+    .step-header .step-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .step-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .step-header p {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── FORM ELEMENTS ────────────────────────── */
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--primary);
+      background: var(--bg);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(201,149,107,0.12);
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* ── BUSINESS TYPE CARDS ─────────────────── */
+    .biz-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .biz-card {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+      user-select: none;
+    }
+    .biz-card:hover { border-color: var(--accent2); background: #FDF5EE; }
+    .biz-card.selected {
+      border-color: var(--accent);
+      background: #FDF5EE;
+      transform: scale(1.03);
+    }
+    .biz-card .biz-icon { font-size: 2rem; margin-bottom: 8px; }
+    .biz-card .biz-name { font-size: 0.8rem; font-weight: 600; }
+
+    /* ── TOGGLE CARDS (inventory, APIs) ──────── */
+    .toggle-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .toggle-card {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .toggle-card:hover { border-color: var(--accent2); background: #FDF5EE; }
+    .toggle-card.selected { border-color: var(--accent); background: #FDF5EE; }
+    .toggle-card .t-icon { font-size: 1.4rem; }
+    .toggle-card .t-text { font-size: 0.82rem; font-weight: 600; }
+    .toggle-card .t-check {
+      margin-left: auto;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+      flex-shrink: 0;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .toggle-card.selected .t-check {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ── STAFF TABLE ──────────────────────────── */
+    .staff-list { margin-bottom: 14px; }
+    .staff-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .staff-row:first-child { border-top: 1px solid var(--border); }
+    .staff-row input, .staff-row select {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      background: var(--bg);
+      outline: none;
+    }
+    .staff-row input:focus, .staff-row select:focus {
+      border-color: var(--accent);
+    }
+    .btn-remove {
+      background: none;
+      border: none;
+      color: var(--danger);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+    }
+    .btn-add-staff {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: none;
+      border: 2px dashed var(--accent);
+      border-radius: 8px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-add-staff:hover { background: #FDF5EE; }
+
+    /* ── LAUNCH CHECKLIST ─────────────────────── */
+    .checklist { margin: 0; padding: 0; list-style: none; }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+    .check-icon {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--success);
+      color: #fff;
+      font-size: 0.65rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .check-icon.pending {
+      background: var(--border);
+      color: var(--muted);
+    }
+    .check-label { font-weight: 600; }
+    .check-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── DEMO DATA CONFIRM ────────────────────── */
+    .demo-option {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      cursor: pointer;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .demo-option:hover { border-color: var(--accent2); background: #FDF5EE; }
+    .demo-option.selected { border-color: var(--accent); background: #FDF5EE; }
+    .demo-option .d-icon { font-size: 1.8rem; flex-shrink: 0; }
+    .demo-option .d-title { font-size: 0.9rem; font-weight: 700; }
+    .demo-option .d-desc { font-size: 0.8rem; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+
+    /* ── NAVIGATION BUTTONS ───────────────────── */
+    .step-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 24px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-secondary {
+      background: var(--border);
+      color: var(--primary);
+    }
+    .btn-secondary:hover { background: #d8d2cc; }
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+      font-size: 1rem;
+      padding: 14px 32px;
+    }
+    .btn-success:hover { opacity: 0.9; }
+
+    /* ── PROGRESS BAR ─────────────────────────── */
+    .progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 4px;
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 4px;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── TOAST ────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--primary);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+      z-index: 999;
+      max-width: 320px;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.success { background: var(--success); }
+    #toast.error   { background: var(--danger); }
+
+    /* ── COMPLETED STATE ──────────────────────── */
+    .complete-screen {
+      text-align: center;
+      padding: 20px;
+    }
+    .complete-screen .big-icon { font-size: 4rem; margin-bottom: 16px; }
+    .complete-screen h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+    .complete-screen p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+    .complete-screen .go-btn {
+      margin-top: 28px;
+      display: inline-block;
+    }
+
+    .info-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: #EDF2FF;
+      color: #3B5BDB;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .wizard-wrapper { padding: 20px 12px 40px; }
+      .step-card { padding: 24px 18px; }
+      .form-row { grid-template-columns: 1fr; }
+      .toggle-grid { grid-template-columns: 1fr; }
+      .staff-row { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <a href="/" class="logo">Nova AI</a>
+  <span class="badge">Setup Wizard</span>
+</nav>
+
+<div class="wizard-wrapper">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h3>Setup Steps</h3>
+    <div id="sidebar-steps">
+      <!-- injected by JS -->
+    </div>
+  </aside>
+
+  <!-- MAIN PANEL -->
+  <main class="main-panel">
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- STEP 1 — Business Type                  -->
+    <!-- ════════════════════════════════════════ -->
+    <section class="step-card" id="step-1">
+      <div class="step-header">
+        <div class="step-tag">Step 1 of 7</div>
+        <h2>What type of business are you?</h2>
+        <p>Select the category that best describes your practice. This shapes your entire Nova experience.</p>
+      </div>
+
+      <div class="biz-grid">
+        <div class="biz-card" data-value="medspa">
+          <div class="biz-icon">💆</div>
+          <div class="biz-name">Med Spa</div>
+        </div>
+        <div class="biz-card" data-value="aesthetic_clinic">
+          <div class="biz-icon">✨</div>
+          <div class="biz-name">Aesthetic Clinic</div>
+        </div>
+        <div class="biz-card" data-value="dermatology">
+          <div class="biz-icon">🔬</div>
+          <div class="biz-name">Dermatology</div>
+        </div>
+        <div class="biz-card" data-value="plastic_surgery">
+          <div class="biz-icon">🏥</div>
+          <div class="biz-name">Plastic Surgery</div>
+        </div>
+        <div class="biz-card" data-value="wellness">
+          <div class="biz-icon">🌿</div>
+          <div class="biz-name">Wellness Center</div>
+        </div>
+        <div class="biz-card" data-value="dental">
+          <div class="biz-icon">🦷</div>
+          <div class="biz-name">Dental / Ortho</div>
+        </div>
+        <div class="biz-card" data-value="chiropractic">
+          <div class="biz-icon">🦴</div>
+          <div class="biz-name">Chiropractic</div>
+        </div>
+        <div class="biz-card" data-value="other">
+          <div class="biz-icon">🏢</div>
+          <div class="biz-name">Other</div>
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <span></span>
+        <button class="btn btn-primary" onclick="nextStep(1)">Continue →</button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- STEP 2 — Company Info                   -->
+    <!-- ════════════════════════════════════════ -->
+    <section class="step-card" id="step-2">
+      <div class="step-header">
+        <div class="step-tag">Step 2 of 7</div>
+        <h2>Tell us about your company</h2>
+        <p>Basic information to set up your practice profile in Nova.</p>
+      </div>
+
+      <div class="form-group">
+        <label>Practice / Business Name *</label>
+        <input type="text" id="s2-companyName" placeholder="e.g. Bloom Med Spa" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="s2-phone" placeholder="(602) 555-0100" />
+        </div>
+        <div class="form-group">
+          <label>Business Email *</label>
+          <input type="email" id="s2-email" placeholder="hello@yourpractice.com" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Street Address</label>
+        <input type="text" id="s2-address" placeholder="1234 Main St, Suite 200" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" id="s2-city" placeholder="Phoenix" />
+        </div>
+        <div class="form-group">
+          <label>State</label>
+          <input type="text" id="s2-state" placeholder="AZ" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>ZIP Code</label>
+          <input type="text" id="s2-zip" placeholder="85001" />
+        </div>
+        <div class="form-group">
+          <label>Website</label>
+          <input type="url" id="s2-website" placeholder="https://yourpractice.com" />
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="prevStep(2)">← Back</button>
+        <button class="btn btn-primary" onclick="nextStep(2)">Continue →</button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- STEP 3 — Inventory Config               -->
+    <!-- ════════════════════════════════════════ -->
+    <section class="step-card" id="step-3">
+      <div class="step-header">
+        <div class="step-tag">Step 3 of 7</div>
+        <h2>Inventory configuration</h2>
+        <p>Select what types of inventory Nova should help you track. You can change this later.</p>
+      </div>
+
+      <div class="toggle-grid" id="inv-grid">
+        <div class="toggle-card" data-value="injectables">
+          <div class="t-icon">💉</div>
+          <div class="t-text">Injectables<br/><small style="font-weight:400;color:var(--muted)">Botox, Filler, etc.</small></div>
+          <div class="t-check">✓</div>
+        </div>
+        <div class="toggle-card" data-value="skincare">
+          <div class="t-icon">🧴</div>
+          <div class="t-text">Skincare Products<br/><small style="font-weight:400;color:var(--muted)">Retail & clinical</small></div>
+          <div class="t-check">✓</div>
+        </div>
+        <div class="toggle-card" data-value="devices">
+          <div class="t-icon">⚡</div>
+          <div class="t-text">Devices & Equipment<br/><small style="font-weight:400;color:var(--muted)">Laser, RF, etc.</small></div>
+          <div class="t-check">✓</div>
+        </div>
+        <div class="toggle-card" data-value="supplements">
+          <div class="t-icon">💊</div>
+          <div class="t-text">Supplements / Nutra<br/><small style="font-weight:400;color:var(--muted)">Vitamins, peptides</small></div>
+          <div class="t-check">✓</div>
+        </div>
+        <div class="toggle-card" data-value="consumables">
+          <div class="t-icon">🧤</div>
+          <div class="t-text">Consumables<br/><small style="font-weight:400;color:var(--muted)">Gloves, needles, pads</small></div>
+          <div class="t-check">✓</div>
+        </div>
+        <div class="toggle-card" data-value="gift_cards">
+          <div class="t-icon">🎁</div>
+          <div class="t-text">Gift Cards / Vouchers<br/><small style="font-weight:400;color:var(--muted)">Packages & memberships</small></div>
+          <div class="t-check">✓</div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:18px;">
+        <label>Low Stock Alert Threshold (units)</label>
+        <input type="number" id="s3-threshold" placeholder="10" min="1" />
+      </div>
+      <div class="form-group">
+        <label>Preferred Units of Measure</label>
+        <select id="s3-units">
+          <option value="units">Units</option>
+          <option value="ml">mL (milliliters)</option>
+          <option value="vials">Vials</option>
+          <option value="boxes">Boxes</option>
+          <option value="each">Each</option>
+        </select>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="prevStep(3)">← Back</button>
+        <button class="btn btn-primary" onclick="nextStep(3)">Continue →</button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- STEP 4 — Staff Setup                    -->
+    <!-- ════════════════════════════════════════ -->
+    <section class="step-card" id="step-4">
+      <div class="step-header">
+        <div class="step-tag">Step 4 of 7</div>
+        <h2>Set up your team</h2>
+        <p>Add initial staff members. You can always add more after launch.</p>
+      </div>
+
+      <div class="staff-list" id="staff-list">
+        <!-- Rows injected by JS -->
+      </div>
+
+      <button class="btn-add-staff" onclick="addStaffRow()">
+        <span>＋</span> Add Team Member
+      </button>
+
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="prevStep(4)">← Back</button>
+        <button class="btn btn-primary" onclick="nextStep(4)">Continue →</button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- STEP 5 — API Connections                -->
+    <!-- ════════════════════════════════════════ -->
+    <section class="step-card" id="step-5">
+      <div class="step-header">
+        <div class="step-tag">Step 5 of 7</div>
+        <h2>Connect your tools</h2>
+        <p>Select integrations to enable. You can configure credentials after setup.</p>
+      </div>
+
+      <div class="toggle-grid" id="api-grid">
+        <div class="toggle-card" data-value="stripe">
+          <div class="t-icon">💳</div>
+          <div class="t-text">Stripe<br/><small style="font-weight:400;color:var(--muted)">Payments & invoicing</small></div>
+          <div class="t-check">✓</div>
+        </div>
+        <div class="toggle-card" data-value="square">
+          <div class="t-icon">🟦</div>
+          <div class="t-text">Square<br/><small style="font-weight:400;color:var(--muted)">POS & payments</small></div>
+          <div class="t-check">✓</div>
+        </div>
+        <div class="toggle-card" data-value="acuity">
+          <div class="t-icon">📅</div>
+          <div class="t-text">Acuity / Calendly<br/><small style="font-weight:400;color:var(--muted)">Online booking</small></div>
+          <div class="t-check">✓</div>
+        </div>
+        <div class="toggle-card" data-value="ehr_charm">
+          <div class="t-icon">📋</div>
+          <div class="t-text">Charm EHR<br/><small style="font-weight:400;color:var(--muted)">Clinical records</small></div>
+          <div class="t-check">✓</div>
+        </div>
+        <div class="toggle-card" data-value="twilio">
+          <div class="t-icon">💬</div>
+          <div class="t-text">Twilio / SMS<br/><small style="font-weight:400;color:var(--muted)">Reminders & alerts</small></div>
+          <div class="t-check">✓</div>
+        </div>
+        <div class="toggle-card" data-value="google_analytics">
+          <div class="t-icon">📊</div>
+          <div class="t-text">Google Analytics<br/><small style="font-weight:400;color:var(--muted)">Marketing insights</small></div>
+          <div class="t-check">✓</div>
+        </div>
+        <div class="toggle-card" data-value="quickbooks">
+          <div class="t-icon">📚</div>
+          <div class="t-text">QuickBooks<br/><small style="font-weight:400;color:var(--muted)">Accounting sync</small></div>
+          <div class="t-check">✓</div>
+        </div>
+        <div class="toggle-card" data-value="zenoti">
+          <div class="t-icon">🌸</div>
+          <div class="t-text">Zenoti<br/><small style="font-weight:400;color:var(--muted)">Practice management</small></div>
+          <div class="t-check">✓</div>
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="prevStep(5)">← Back</button>
+        <button class="btn btn-primary" onclick="nextStep(5)">Continue →</button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- STEP 6 — Demo Data                      -->
+    <!-- ════════════════════════════════════════ -->
+    <section class="step-card" id="step-6">
+      <div class="step-header">
+        <div class="step-tag">Step 6 of 7</div>
+        <h2>Load demo data?</h2>
+        <p>Demo data lets you explore Nova with sample patients, appointments, and services — no real data needed to get started.</p>
+      </div>
+
+      <div class="demo-option selected" id="demo-yes" onclick="selectDemo(true)">
+        <div class="d-icon">🧪</div>
+        <div>
+          <div class="d-title">Yes, load demo data</div>
+          <div class="d-desc">Seed 3 sample patients, 4 demo services, and example encounters. Perfect for exploring features before your real data is imported.</div>
+        </div>
+      </div>
+
+      <div class="demo-option" id="demo-no" onclick="selectDemo(false)">
+        <div class="d-icon">🚀</div>
+        <div>
+          <div class="d-title">No, start clean</div>
+          <div class="d-desc">Jump straight in with a blank slate. Best if you're ready to import real data right away.</div>
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="prevStep(6)">← Back</button>
+        <button class="btn btn-primary" onclick="nextStep(6)">Review &amp; Launch →</button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- STEP 7 — Launch Checklist               -->
+    <!-- ════════════════════════════════════════ -->
+    <section class="step-card" id="step-7">
+      <div class="step-header">
+        <div class="step-tag">Step 7 of 7</div>
+        <h2>Almost there! Review your setup</h2>
+        <p>Here's a summary of everything configured. Launch when you're ready.</p>
+      </div>
+
+      <ul class="checklist" id="launch-checklist">
+        <!-- Populated by JS -->
+      </ul>
+
+      <div id="launch-notes" style="margin-top:20px;padding:16px;background:#F0FFF4;border:1px solid #C6F6D5;border-radius:10px;font-size:0.85rem;display:none;">
+        <strong style="color:var(--success);">✅ All systems go!</strong>
+        <p style="color:#276749;margin-top:4px;">Your workspace is configured and ready to provision. Click Launch to create your account in Nova.</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="prevStep(7)">← Back</button>
+        <button class="btn btn-success" id="launch-btn" onclick="launchNova()">
+          🚀 Launch Nova
+        </button>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- COMPLETE SCREEN                         -->
+    <!-- ════════════════════════════════════════ -->
+    <section class="step-card" id="step-complete">
+      <div class="complete-screen">
+        <div class="big-icon">🎉</div>
+        <h2>You're all set!</h2>
+        <p>Your Nova workspace has been provisioned and is ready to go.<br/>
+        All your settings have been saved to the database.</p>
+        <div id="complete-details" style="margin-top:20px;padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:10px;font-size:0.85rem;text-align:left;"></div>
+        <a href="/" class="btn btn-primary go-btn" style="text-decoration:none;">Go to Dashboard →</a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════
+const state = {
+  currentStep: 1,
+  totalSteps: 7,
+  sessionId: null,
+  steps: {
+    1: { type: null },
+    2: {},
+    3: { categories: [], threshold: 10, units: 'units' },
+    4: { staff: [] },
+    5: { integrations: [] },
+    6: { loadDemo: true },
+    7: {}
+  }
+};
+
+const STEP_LABELS = [
+  'Business Type',
+  'Company Info',
+  'Inventory Config',
+  'Staff Setup',
+  'API Connections',
+  'Demo Data',
+  'Launch Checklist',
+];
+
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  renderSidebar();
+  renderStaffList();
+  initToggleGrids();
+  await startSession();
+  showStep(1);
+});
+
+async function startSession() {
+  try {
+    const r = await fetch('/api/onboarding/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    if (r.ok) {
+      const data = await r.json();
+      state.sessionId = data.session?.id || null;
+    }
+  } catch (_) {
+    // offline / dev mode — carry on without session
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SIDEBAR
+// ══════════════════════════════════════════════════════════════
+function renderSidebar() {
+  const el = document.getElementById('sidebar-steps');
+  el.innerHTML = STEP_LABELS.map((label, i) => {
+    const num = i + 1;
+    return `
+      <div class="step-item" id="sidebar-${num}" data-step="${num}">
+        <div class="step-num">${num}</div>
+        <div class="step-label">${label}</div>
+      </div>`;
+  }).join('');
+}
+
+function updateSidebar(current) {
+  STEP_LABELS.forEach((_, i) => {
+    const el = document.getElementById(`sidebar-${i+1}`);
+    if (!el) return;
+    el.className = 'step-item';
+    if (i + 1 < current) el.classList.add('done');
+    if (i + 1 === current) el.classList.add('active');
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SHOW STEP
+// ══════════════════════════════════════════════════════════════
+function showStep(n) {
+  document.querySelectorAll('.step-card').forEach(c => c.classList.remove('active'));
+  const target = document.getElementById(`step-${n === 'complete' ? 'complete' : n}`);
+  if (target) target.classList.add('active');
+  state.currentStep = typeof n === 'number' ? n : state.totalSteps + 1;
+  const pct = Math.min(100, ((state.currentStep - 1) / state.totalSteps) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  updateSidebar(state.currentStep);
+  if (n === 7) buildChecklist();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TOGGLE GRIDS (inventory & API)
+// ══════════════════════════════════════════════════════════════
+function initToggleGrids() {
+  document.querySelectorAll('#inv-grid .toggle-card, #api-grid .toggle-card').forEach(card => {
+    card.addEventListener('click', () => card.classList.toggle('selected'));
+  });
+  // Business type
+  document.querySelectorAll('.biz-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.biz-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      state.steps[1].type = card.dataset.value;
+    });
+  });
+}
+
+function getSelectedToggles(gridId) {
+  return [...document.querySelectorAll(`#${gridId} .toggle-card.selected`)]
+    .map(c => c.dataset.value);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  STAFF
+// ══════════════════════════════════════════════════════════════
+let staffCounter = 0;
+
+function renderStaffList() {
+  const list = document.getElementById('staff-list');
+  list.innerHTML = '';
+  // Start with one empty row
+  addStaffRow();
+}
+
+function addStaffRow() {
+  const list = document.getElementById('staff-list');
+  const id = ++staffCounter;
+  const row = document.createElement('div');
+  row.className = 'staff-row';
+  row.id = `staff-row-${id}`;
+  row.innerHTML = `
+    <input type="text"  placeholder="First Name"  id="sf-first-${id}" />
+    <input type="email" placeholder="Email"        id="sf-email-${id}" />
+    <select id="sf-role-${id}">
+      <option value="admin">Admin</option>
+      <option value="clinician" selected>Clinician</option>
+      <option value="scheduler">Scheduler</option>
+      <option value="front_desk">Front Desk</option>
+      <option value="esthetician">Esthetician</option>
+    </select>
+    <button class="btn-remove" onclick="removeStaffRow(${id})" title="Remove">✕</button>
+  `;
+  list.appendChild(row);
+}
+
+function removeStaffRow(id) {
+  const row = document.getElementById(`staff-row-${id}`);
+  if (row) row.remove();
+}
+
+function collectStaff() {
+  const rows = document.querySelectorAll('.staff-row');
+  const staff = [];
+  rows.forEach(row => {
+    const id = row.id.replace('staff-row-', '');
+    const firstName = document.getElementById(`sf-first-${id}`)?.value.trim();
+    const email = document.getElementById(`sf-email-${id}`)?.value.trim();
+    const role = document.getElementById(`sf-role-${id}`)?.value;
+    if (firstName || email) {
+      staff.push({ firstName, email, role });
+    }
+  });
+  return staff;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DEMO DATA SELECT
+// ══════════════════════════════════════════════════════════════
+function selectDemo(load) {
+  state.steps[6].loadDemo = load;
+  document.getElementById('demo-yes').classList.toggle('selected', load);
+  document.getElementById('demo-no').classList.toggle('selected', !load);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════════════
+async function nextStep(current) {
+  if (!validateStep(current)) return;
+  collectStepData(current);
+  await saveStepToServer(current);
+  if (current < state.totalSteps) {
+    showStep(current + 1);
+  }
+}
+
+function prevStep(current) {
+  if (current > 1) showStep(current - 1);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  VALIDATION
+// ══════════════════════════════════════════════════════════════
+function validateStep(n) {
+  if (n === 1) {
+    if (!state.steps[1].type) {
+      toast('Please select a business type', 'error');
+      return false;
+    }
+  }
+  if (n === 2) {
+    const name = document.getElementById('s2-companyName').value.trim();
+    const email = document.getElementById('s2-email').value.trim();
+    if (!name) { toast('Company name is required', 'error'); return false; }
+    if (!email) { toast('Business email is required', 'error'); return false; }
+  }
+  return true;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  COLLECT DATA
+// ══════════════════════════════════════════════════════════════
+function collectStepData(n) {
+  if (n === 2) {
+    state.steps[2] = {
+      companyName: document.getElementById('s2-companyName').value.trim(),
+      phone: document.getElementById('s2-phone').value.trim(),
+      email: document.getElementById('s2-email').value.trim(),
+      address: document.getElementById('s2-address').value.trim(),
+      city: document.getElementById('s2-city').value.trim(),
+      state: document.getElementById('s2-state').value.trim(),
+      zip: document.getElementById('s2-zip').value.trim(),
+      website: document.getElementById('s2-website').value.trim(),
+    };
+  }
+  if (n === 3) {
+    state.steps[3] = {
+      categories: getSelectedToggles('inv-grid'),
+      threshold: parseInt(document.getElementById('s3-threshold').value) || 10,
+      units: document.getElementById('s3-units').value,
+    };
+  }
+  if (n === 4) {
+    state.steps[4] = { staff: collectStaff() };
+  }
+  if (n === 5) {
+    state.steps[5] = { integrations: getSelectedToggles('api-grid') };
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SAVE STEP TO SERVER
+// ══════════════════════════════════════════════════════════════
+async function saveStepToServer(stepNum) {
+  if (!state.sessionId) return;
+  try {
+    await fetch(`/api/onboarding/${state.sessionId}/step`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ step: stepNum, data: state.steps[stepNum] })
+    });
+  } catch (_) { /* non-blocking */ }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  LAUNCH CHECKLIST (Step 7)
+// ══════════════════════════════════════════════════════════════
+function buildChecklist() {
+  const s = state.steps;
+  const items = [
+    {
+      done: !!s[1].type,
+      label: 'Business Type',
+      sub: s[1].type ? `Selected: ${formatBizType(s[1].type)}` : 'Not selected',
+    },
+    {
+      done: !!s[2].companyName,
+      label: 'Company Info',
+      sub: s[2].companyName
+        ? `${s[2].companyName} · ${s[2].email || 'no email'}`
+        : 'Not completed',
+    },
+    {
+      done: s[3].categories?.length > 0,
+      label: 'Inventory Categories',
+      sub: s[3].categories?.length
+        ? `${s[3].categories.length} categor${s[3].categories.length === 1 ? 'y' : 'ies'} selected`
+        : 'None selected (you can add later)',
+    },
+    {
+      done: s[4].staff?.length > 0,
+      label: 'Staff Members',
+      sub: s[4].staff?.length
+        ? `${s[4].staff.length} member${s[4].staff.length === 1 ? '' : 's'} added`
+        : 'No staff added yet (you can add later)',
+    },
+    {
+      done: s[5].integrations?.length > 0,
+      label: 'API Integrations',
+      sub: s[5].integrations?.length
+        ? s[5].integrations.join(', ')
+        : 'None selected (configure later)',
+    },
+    {
+      done: true,
+      label: 'Demo Data',
+      sub: s[6].loadDemo ? 'Will load sample patients & services' : 'Starting clean',
+    },
+  ];
+
+  const list = document.getElementById('launch-checklist');
+  list.innerHTML = items.map(item => `
+    <li>
+      <div class="check-icon ${item.done ? '' : 'pending'}">${item.done ? '✓' : '!'}</div>
+      <div>
+        <div class="check-label">${item.label}</div>
+        <div class="check-sub">${item.sub}</div>
+      </div>
+    </li>
+  `).join('');
+
+  // Show/hide launch notes
+  const allCritical = !!s[1].type && !!s[2].companyName;
+  document.getElementById('launch-notes').style.display = allCritical ? 'block' : 'none';
+}
+
+function formatBizType(val) {
+  const map = {
+    medspa: 'Med Spa', aesthetic_clinic: 'Aesthetic Clinic', dermatology: 'Dermatology',
+    plastic_surgery: 'Plastic Surgery', wellness: 'Wellness Center', dental: 'Dental / Ortho',
+    chiropractic: 'Chiropractic', other: 'Other'
+  };
+  return map[val] || val;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  LAUNCH
+// ══════════════════════════════════════════════════════════════
+async function launchNova() {
+  const btn = document.getElementById('launch-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Provisioning...';
+
+  // Save step 7 (checklist confirm)
+  state.steps[7] = { confirmed: true, confirmedAt: new Date().toISOString() };
+  await saveStepToServer(7);
+
+  try {
+    if (state.sessionId) {
+      const r = await fetch(`/api/onboarding/${state.sessionId}/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (r.ok) {
+        const data = await r.json();
+        showCompleteScreen(data.result);
+        return;
+      }
+    }
+    // Fallback if no session
+    showCompleteScreen(null);
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = '🚀 Launch Nova';
+    toast('Failed to complete setup. Please try again.', 'error');
+  }
+}
+
+function showCompleteScreen(result) {
+  const details = document.getElementById('complete-details');
+  const s = state.steps;
+  details.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:6px 0;color:var(--muted);width:40%">Business Type</td>
+        <td style="padding:6px 0;font-weight:600">${formatBizType(s[1].type)}</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:6px 0;color:var(--muted)">Company</td>
+        <td style="padding:6px 0;font-weight:600">${s[2].companyName || '—'}</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:6px 0;color:var(--muted)">Staff Added</td>
+        <td style="padding:6px 0;font-weight:600">${result?.staffCount ?? s[4].staff?.length ?? 0}</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:6px 0;color:var(--muted)">Integrations</td>
+        <td style="padding:6px 0;font-weight:600">${s[5].integrations?.join(', ') || 'None'}</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;color:var(--muted)">Demo Data</td>
+        <td style="padding:6px 0;font-weight:600">${s[6].loadDemo ? '✅ Loaded' : '⬜ Skipped'}</td>
+      </tr>
+    </table>
+  `;
+  showStep('complete');
+  document.getElementById('progress-fill').style.width = '100%';
+  toast('🎉 Nova provisioned successfully!', 'success');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════════════
+let toastTimer;
+function toast(msg, type = 'info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 3000);
+}
+</script>
+</body>
+</html>

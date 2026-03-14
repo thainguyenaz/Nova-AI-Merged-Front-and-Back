@@ -90,12 +90,28 @@ async function getUserById(userId) {
   return rows[0] || null;
 }
 
-async function createUser({ email, password, firstName, lastName }) {
+async function createUser({ email, password, firstName, lastName, industryType }) {
   const rows = await q(
-    'INSERT INTO users (email, password, first_name, last_name) VALUES ($1, $2, $3, $4) RETURNING *',
-    [email, password, firstName || '', lastName || '']
+    'INSERT INTO users (email, password, first_name, last_name, industry_type) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+    [email, password, firstName || '', lastName || '', industryType || 'medspa']
   );
   return rows[0];
+}
+
+async function updateUserIndustry(userId, industryType) {
+  const rows = await q(
+    'UPDATE users SET industry_type = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+    [industryType, userId]
+  );
+  return rows[0] || null;
+}
+
+async function getUserIndustry(userId) {
+  const rows = await q(
+    'SELECT id, email, first_name, last_name, industry_type FROM users WHERE id = $1',
+    [userId]
+  );
+  return rows[0] || null;
 }
 
 async function saveRefreshToken(userId, token) {
@@ -112,12 +128,61 @@ async function revokeRefreshToken(userId) {
   await q('DELETE FROM refresh_tokens WHERE user_id = $1', [userId]);
 }
 
+// ── Onboarding (in-memory store — sessions are ephemeral, no PG table needed for v1) ──
+const { randomUUID } = require('crypto');
+const onboardingSessions = [];
+function nowStr() { return new Date().toISOString(); }
+
+async function createOnboardingSession({ userId }) {
+  const session = {
+    id: randomUUID(), user_id: userId || null, status: 'in_progress', current_step: 1,
+    steps: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null },
+    created_at: nowStr(), updated_at: nowStr(),
+  };
+  onboardingSessions.push(session);
+  return session;
+}
+
+async function getOnboardingSession(id) {
+  return onboardingSessions.find(s => s.id === id) || null;
+}
+
+async function updateOnboardingStep(id, step, data) {
+  const session = onboardingSessions.find(s => s.id === id);
+  if (!session) return null;
+  session.steps[step] = data;
+  session.current_step = Math.max(session.current_step, Number(step));
+  session.updated_at = nowStr();
+  return session;
+}
+
+async function finalizeOnboarding(id) {
+  const session = onboardingSessions.find(s => s.id === id);
+  if (!session) return null;
+  const steps = session.steps;
+  const companyInfo = steps[2] || {};
+  const tenantId = randomUUID();
+  const facilityId = randomUUID();
+  // TODO: INSERT into tenants/facilities/users tables when schema is extended
+  session.status = 'completed';
+  session.completed_at = nowStr();
+  session.provisioned = { tenantId, facilityId, staffCount: ((steps[4] || {}).staff || []).length };
+  session.updated_at = nowStr();
+  return {
+    session, tenantId, facilityId,
+    staffCount: session.provisioned.staffCount,
+    demoDataLoaded: !!((steps[6] || {}).loadDemo),
+  };
+}
+
 module.exports = {
   getUserByToken,
   getUserByUsername,
   getUserByEmail,
   getUserById,
   createUser,
+  updateUserIndustry,
+  getUserIndustry,
   saveRefreshToken,
   getRefreshToken,
   revokeRefreshToken,
@@ -128,5 +193,10 @@ module.exports = {
   listEncounters,
   createEncounter,
   listAuditLogs,
-  appendAuditLog
+  appendAuditLog,
+  // Onboarding
+  createOnboardingSession,
+  getOnboardingSession,
+  updateOnboardingStep,
+  finalizeOnboarding,
 };

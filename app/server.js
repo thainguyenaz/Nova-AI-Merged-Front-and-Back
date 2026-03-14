@@ -48,13 +48,14 @@ app.use('/api/auth', authRoutes);
 app.use('/api/industry', industryRoutes);
 // Integration status routes are admin/ops endpoints — no PHI, mounted before requireAuth
 app.use('/api/integrations', integrationRoutes);
+// Onboarding wizard — public, pre-auth flow for new tenant setup
+app.use('/api/onboarding', onboardingRoutes);
 app.use('/api', requireAuth, requireContext, secureRequestLogger);
 app.use('/api/catalog', catalogRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/encounters', encounterRoutes);
 app.use('/api/audit-logs', auditRoutes);
-app.use('/api/onboarding', onboardingRoutes);
 
 // ========== CALENDAR PAGE ROUTE ================================
 app.get('/calendar', (req, res) => {
