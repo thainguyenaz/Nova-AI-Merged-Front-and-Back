@@ -459,15 +459,31 @@ function toast(msg, type = '') {
   setTimeout(() => { el.className = ''; }, 3500);
 }
 
+// ─── Industry → Tenant/Facility mapping ───────────────────────────────────────
+const INDUSTRY_TENANT_MAP = {
+  medspa:  { tenantId: 'tenant-a',       facilityId: 'facility-main'    },
+  barber:  { tenantId: 'tenant-barber',  facilityId: 'facility-barber'  },
+  salon:   { tenantId: 'tenant-salon',   facilityId: 'facility-salon'   },
+  spa:     { tenantId: 'tenant-spa',     facilityId: 'facility-spa'     },
+  clinic:  { tenantId: 'tenant-clinic',  facilityId: 'facility-clinic'  },
+  fitness: { tenantId: 'tenant-fitness', facilityId: 'facility-fitness' }
+};
+
+function getIndustryContext() {
+  const industryType = localStorage.getItem('nova_industry_type') || 'medspa';
+  return INDUSTRY_TENANT_MAP[industryType] || INDUSTRY_TENANT_MAP.medspa;
+}
+
 // ─── API calls ─────────────────────────────────────────────────────────────────
 async function apiFetch(path, opts = {}) {
+  const { tenantId, facilityId } = getIndustryContext();
   const res = await fetch(API + path, {
     ...opts,
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${TOKEN}`,
-      'X-Tenant-Id': 'tenant-a',
-      'X-Facility-Id': 'facility-main',
+      'X-Tenant-Id': tenantId,
+      'X-Facility-Id': facilityId,
       ...(opts.headers || {})
     }
   });

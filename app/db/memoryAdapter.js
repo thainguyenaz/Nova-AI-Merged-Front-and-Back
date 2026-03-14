@@ -57,14 +57,64 @@ const state = {
     { id: 'svc-hydrafacial', tenant_id: 'tenant-a', facility_id: 'facility-main', code: 'HYDRAFACIAL', name: 'HydraFacial', business_type: 'skin', active: true, color: '#06B6D4', duration_min: 60 },
     { id: 'svc-filler', tenant_id: 'tenant-a', facility_id: 'facility-main', code: 'FILLER', name: 'Dermal Filler', business_type: 'injectables', active: true, color: '#EC4899', duration_min: 45 },
     { id: 'svc-laser', tenant_id: 'tenant-a', facility_id: 'facility-main', code: 'LASER', name: 'Laser Treatment', business_type: 'laser', active: true, color: '#F59E0B', duration_min: 60 },
-    { id: 'svc-chemical-peel', tenant_id: 'tenant-a', facility_id: 'facility-main', code: 'CHEM_PEEL', name: 'Chemical Peel', business_type: 'skin', active: true, color: '#10B981', duration_min: 45 }
+    { id: 'svc-chemical-peel', tenant_id: 'tenant-a', facility_id: 'facility-main', code: 'CHEM_PEEL', name: 'Chemical Peel', business_type: 'skin', active: true, color: '#10B981', duration_min: 45 },
+    // ── Spa services ──
+    { id: 'svc-spa-swedish', tenant_id: 'tenant-spa', facility_id: 'facility-spa', code: 'SWEDISH_60', name: 'Full Body Massage', business_type: 'massage', active: true, color: '#6366F1', duration_min: 60 },
+    { id: 'svc-spa-facial', tenant_id: 'tenant-spa', facility_id: 'facility-spa', code: 'FACIAL', name: 'Facial', business_type: 'skin', active: true, color: '#EC4899', duration_min: 60 },
+    { id: 'svc-spa-aromatherapy', tenant_id: 'tenant-spa', facility_id: 'facility-spa', code: 'AROMA', name: 'Aromatherapy', business_type: 'massage', active: true, color: '#14B8A6', duration_min: 60 },
+    { id: 'svc-spa-hotstone', tenant_id: 'tenant-spa', facility_id: 'facility-spa', code: 'HOT_STONE', name: 'Hot Stone Massage', business_type: 'massage', active: true, color: '#F59E0B', duration_min: 90 },
+    { id: 'svc-spa-bodyscrub', tenant_id: 'tenant-spa', facility_id: 'facility-spa', code: 'BODY_SCRUB', name: 'Body Scrub', business_type: 'body', active: true, color: '#10B981', duration_min: 45 },
+    // ── Barber services ──
+    { id: 'svc-barber-fade', tenant_id: 'tenant-barber', facility_id: 'facility-barber', code: 'FADE', name: 'Fade', business_type: 'haircut', active: true, color: '#6366F1', duration_min: 30 },
+    { id: 'svc-barber-beardtrim', tenant_id: 'tenant-barber', facility_id: 'facility-barber', code: 'BEARD_TRIM', name: 'Beard Trim', business_type: 'grooming', active: true, color: '#F97316', duration_min: 20 },
+    { id: 'svc-barber-hotshave', tenant_id: 'tenant-barber', facility_id: 'facility-barber', code: 'HOT_SHAVE', name: 'Hot Shave', business_type: 'grooming', active: true, color: '#FB923C', duration_min: 30 },
+    { id: 'svc-barber-haircut', tenant_id: 'tenant-barber', facility_id: 'facility-barber', code: 'MENS_CUT', name: "Men's Haircut", business_type: 'haircut', active: true, color: '#14B8A6', duration_min: 30 },
+    { id: 'svc-barber-kidscut', tenant_id: 'tenant-barber', facility_id: 'facility-barber', code: 'KIDS_CUT', name: 'Kids Cut', business_type: 'haircut', active: true, color: '#10B981', duration_min: 20 },
+    // ── Salon services ──
+    { id: 'svc-salon-color', tenant_id: 'tenant-salon', facility_id: 'facility-salon', code: 'FULL_COLOR', name: 'Full Color', business_type: 'color', active: true, color: '#EC4899', duration_min: 90 },
+    { id: 'svc-salon-highlights', tenant_id: 'tenant-salon', facility_id: 'facility-salon', code: 'HIGHLIGHTS', name: 'Highlights', business_type: 'color', active: true, color: '#F59E0B', duration_min: 90 },
+    { id: 'svc-salon-balayage', tenant_id: 'tenant-salon', facility_id: 'facility-salon', code: 'BALAYAGE', name: 'Balayage', business_type: 'color', active: true, color: '#6366F1', duration_min: 120 },
+    { id: 'svc-salon-blowout', tenant_id: 'tenant-salon', facility_id: 'facility-salon', code: 'BLOWOUT', name: 'Blowout', business_type: 'style', active: true, color: '#14B8A6', duration_min: 45 },
+    { id: 'svc-salon-trim', tenant_id: 'tenant-salon', facility_id: 'facility-salon', code: 'TRIM_STYLE', name: 'Trim & Style', business_type: 'style', active: true, color: '#10B981', duration_min: 45 },
+    // ── Clinic services ──
+    { id: 'svc-clinic-consultation', tenant_id: 'tenant-clinic', facility_id: 'facility-clinic', code: 'CONSULT', name: 'Consultation', business_type: 'clinical', active: true, color: '#6366F1', duration_min: 30 },
+    { id: 'svc-clinic-physical', tenant_id: 'tenant-clinic', facility_id: 'facility-clinic', code: 'PHYSICAL', name: 'Physical Exam', business_type: 'clinical', active: true, color: '#14B8A6', duration_min: 45 },
+    { id: 'svc-clinic-labwork', tenant_id: 'tenant-clinic', facility_id: 'facility-clinic', code: 'LAB_WORK', name: 'Lab Work', business_type: 'diagnostic', active: true, color: '#F59E0B', duration_min: 20 },
+    { id: 'svc-clinic-followup', tenant_id: 'tenant-clinic', facility_id: 'facility-clinic', code: 'FOLLOW_UP', name: 'Follow-Up Visit', business_type: 'clinical', active: true, color: '#10B981', duration_min: 30 },
+    { id: 'svc-clinic-urgent', tenant_id: 'tenant-clinic', facility_id: 'facility-clinic', code: 'URGENT', name: 'Urgent Care Visit', business_type: 'clinical', active: true, color: '#EC4899', duration_min: 30 },
+    // ── Fitness services ──
+    { id: 'svc-fitness-pt60', tenant_id: 'tenant-fitness', facility_id: 'facility-fitness', code: 'PT_60', name: 'Personal Training 60min', business_type: 'training', active: true, color: '#6366F1', duration_min: 60 },
+    { id: 'svc-fitness-pt30', tenant_id: 'tenant-fitness', facility_id: 'facility-fitness', code: 'PT_30', name: 'Personal Training 30min', business_type: 'training', active: true, color: '#F97316', duration_min: 30 },
+    { id: 'svc-fitness-group', tenant_id: 'tenant-fitness', facility_id: 'facility-fitness', code: 'GROUP_FIT', name: 'Group Fitness Class', business_type: 'class', active: true, color: '#14B8A6', duration_min: 60 },
+    { id: 'svc-fitness-yoga', tenant_id: 'tenant-fitness', facility_id: 'facility-fitness', code: 'YOGA', name: 'Yoga Class', business_type: 'class', active: true, color: '#10B981', duration_min: 60 },
+    { id: 'svc-fitness-nutrition', tenant_id: 'tenant-fitness', facility_id: 'facility-fitness', code: 'NUTRITION', name: 'Nutrition Consultation', business_type: 'wellness', active: true, color: '#EC4899', duration_min: 45 }
   ],
   providers: [
     { id: 'prov-1', tenant_id: 'tenant-a', facility_id: 'facility-main', name: 'Dr. Sarah Chen', role: 'MD', specialty: 'injectables', color: '#6366F1', avatar: 'SC', active: true },
     { id: 'prov-2', tenant_id: 'tenant-a', facility_id: 'facility-main', name: 'Dr. Marco Rivera', role: 'NP', specialty: 'laser', color: '#F97316', avatar: 'MR', active: true },
     { id: 'prov-3', tenant_id: 'tenant-a', facility_id: 'facility-main', name: 'Ava Thompson', role: 'Esthetician', specialty: 'skin', color: '#14B8A6', avatar: 'AT', active: true },
     { id: 'prov-4', tenant_id: 'tenant-a', facility_id: 'facility-main', name: 'Dr. Priya Patel', role: 'MD', specialty: 'injectables', color: '#E879F9', avatar: 'PP', active: true },
-    { id: 'prov-5', tenant_id: 'tenant-a', facility_id: 'facility-main', name: 'Jake Morales', role: 'Tech', specialty: 'laser', color: '#FB923C', avatar: 'JM', active: true }
+    { id: 'prov-5', tenant_id: 'tenant-a', facility_id: 'facility-main', name: 'Jake Morales', role: 'Tech', specialty: 'laser', color: '#FB923C', avatar: 'JM', active: true },
+    // ── Spa providers ──
+    { id: 'prov-spa-1', tenant_id: 'tenant-spa', facility_id: 'facility-spa', name: 'Anna Kowalski', role: 'Massage Therapist', specialty: 'massage', color: '#6366F1', avatar: 'AK', active: true },
+    { id: 'prov-spa-2', tenant_id: 'tenant-spa', facility_id: 'facility-spa', name: 'Linda Park', role: 'Esthetician', specialty: 'skin', color: '#EC4899', avatar: 'LP', active: true },
+    { id: 'prov-spa-3', tenant_id: 'tenant-spa', facility_id: 'facility-spa', name: 'Mei Zhang', role: 'Massage Therapist', specialty: 'massage', color: '#14B8A6', avatar: 'MZ', active: true },
+    // ── Barber providers ──
+    { id: 'prov-barber-1', tenant_id: 'tenant-barber', facility_id: 'facility-barber', name: 'Marcus Johnson', role: 'Barber', specialty: 'fade', color: '#6366F1', avatar: 'MJ', active: true },
+    { id: 'prov-barber-2', tenant_id: 'tenant-barber', facility_id: 'facility-barber', name: 'Devon Williams', role: 'Master Barber', specialty: 'grooming', color: '#F97316', avatar: 'DW', active: true },
+    { id: 'prov-barber-3', tenant_id: 'tenant-barber', facility_id: 'facility-barber', name: 'Keisha Brown', role: 'Barber', specialty: 'haircut', color: '#14B8A6', avatar: 'KB', active: true },
+    // ── Salon providers ──
+    { id: 'prov-salon-1', tenant_id: 'tenant-salon', facility_id: 'facility-salon', name: 'Jessica Laurent', role: 'Stylist', specialty: 'color', color: '#EC4899', avatar: 'JL', active: true },
+    { id: 'prov-salon-2', tenant_id: 'tenant-salon', facility_id: 'facility-salon', name: 'Chloe Bennett', role: 'Senior Stylist', specialty: 'balayage', color: '#6366F1', avatar: 'CB', active: true },
+    { id: 'prov-salon-3', tenant_id: 'tenant-salon', facility_id: 'facility-salon', name: 'Amy Chen', role: 'Stylist', specialty: 'style', color: '#14B8A6', avatar: 'AC', active: true },
+    // ── Clinic providers ──
+    { id: 'prov-clinic-1', tenant_id: 'tenant-clinic', facility_id: 'facility-clinic', name: 'Dr. Robert Chen', role: 'MD', specialty: 'primary care', color: '#6366F1', avatar: 'RC', active: true },
+    { id: 'prov-clinic-2', tenant_id: 'tenant-clinic', facility_id: 'facility-clinic', name: 'Patricia Mills', role: 'NP', specialty: 'general', color: '#14B8A6', avatar: 'PM', active: true },
+    { id: 'prov-clinic-3', tenant_id: 'tenant-clinic', facility_id: 'facility-clinic', name: 'Sandra Lopez', role: 'PA', specialty: 'urgent care', color: '#F59E0B', avatar: 'SL', active: true },
+    // ── Fitness providers ──
+    { id: 'prov-fitness-1', tenant_id: 'tenant-fitness', facility_id: 'facility-fitness', name: 'Alex Rivera', role: 'Personal Trainer', specialty: 'strength', color: '#6366F1', avatar: 'AR', active: true },
+    { id: 'prov-fitness-2', tenant_id: 'tenant-fitness', facility_id: 'facility-fitness', name: 'Jordan Blake', role: 'Yoga Instructor', specialty: 'yoga', color: '#10B981', avatar: 'JB', active: true },
+    { id: 'prov-fitness-3', tenant_id: 'tenant-fitness', facility_id: 'facility-fitness', name: 'Morgan Hayes', role: 'Nutritionist', specialty: 'nutrition', color: '#EC4899', avatar: 'MH', active: true }
   ],
   patients: [
     { id: 'pt-1', tenant_id: 'tenant-a', facility_id: 'facility-main', mrn: 'MRN-001', first_name: 'Emma', last_name: 'Wilson', dob: '1988-05-14', email: 'emma.wilson@email.com', phone: '602-555-0101', created_at: now(), updated_at: now() },
@@ -74,7 +124,37 @@ const state = {
     { id: 'pt-5', tenant_id: 'tenant-a', facility_id: 'facility-main', mrn: 'MRN-005', first_name: 'Noah', last_name: 'Brown', dob: '1990-07-18', email: 'noah.b@email.com', phone: '602-555-0105', created_at: now(), updated_at: now() },
     { id: 'pt-6', tenant_id: 'tenant-a', facility_id: 'facility-main', mrn: 'MRN-006', first_name: 'Ava', last_name: 'Davis', dob: '1987-12-05', email: 'ava.d@email.com', phone: '602-555-0106', created_at: now(), updated_at: now() },
     { id: 'pt-7', tenant_id: 'tenant-a', facility_id: 'facility-main', mrn: 'MRN-007', first_name: 'Isabella', last_name: 'Garcia', dob: '1993-04-25', email: 'isabella.g@email.com', phone: '602-555-0107', created_at: now(), updated_at: now() },
-    { id: 'pt-8', tenant_id: 'tenant-a', facility_id: 'facility-main', mrn: 'MRN-008', first_name: 'Mason', last_name: 'Taylor', dob: '1991-08-12', email: 'mason.t@email.com', phone: '602-555-0108', created_at: now(), updated_at: now() }
+    { id: 'pt-8', tenant_id: 'tenant-a', facility_id: 'facility-main', mrn: 'MRN-008', first_name: 'Mason', last_name: 'Taylor', dob: '1991-08-12', email: 'mason.t@email.com', phone: '602-555-0108', created_at: now(), updated_at: now() },
+    // ── Spa patients ──
+    { id: 'pt-spa-1', tenant_id: 'tenant-spa', facility_id: 'facility-spa', mrn: 'SPA-001', first_name: 'Victoria', last_name: 'Hughes', dob: '1980-04-19', email: 'v.hughes@email.com', phone: '602-555-0201', created_at: now(), updated_at: now() },
+    { id: 'pt-spa-2', tenant_id: 'tenant-spa', facility_id: 'facility-spa', mrn: 'SPA-002', first_name: 'Natalie', last_name: 'Foster', dob: '1975-08-07', email: 'n.foster@email.com', phone: '602-555-0202', created_at: now(), updated_at: now() },
+    { id: 'pt-spa-3', tenant_id: 'tenant-spa', facility_id: 'facility-spa', mrn: 'SPA-003', first_name: 'Grace', last_name: 'Lee', dob: '2000-03-25', email: 'g.lee@email.com', phone: '602-555-0203', created_at: now(), updated_at: now() },
+    { id: 'pt-spa-4', tenant_id: 'tenant-spa', facility_id: 'facility-spa', mrn: 'SPA-004', first_name: 'Heather', last_name: 'Scott', dob: '1965-12-11', email: 'h.scott@email.com', phone: '602-555-0204', created_at: now(), updated_at: now() },
+    { id: 'pt-spa-5', tenant_id: 'tenant-spa', facility_id: 'facility-spa', mrn: 'SPA-005', first_name: 'Donna', last_name: 'Price', dob: '1991-06-29', email: 'd.price@email.com', phone: '602-555-0205', created_at: now(), updated_at: now() },
+    // ── Barber patients ──
+    { id: 'pt-bar-1', tenant_id: 'tenant-barber', facility_id: 'facility-barber', mrn: 'BAR-001', first_name: 'Tyler', last_name: 'Moore', dob: '1995-06-12', email: 't.moore@email.com', phone: '602-555-0301', created_at: now(), updated_at: now() },
+    { id: 'pt-bar-2', tenant_id: 'tenant-barber', facility_id: 'facility-barber', mrn: 'BAR-002', first_name: 'James', last_name: 'Rivera', dob: '1988-02-28', email: 'j.rivera@email.com', phone: '602-555-0302', created_at: now(), updated_at: now() },
+    { id: 'pt-bar-3', tenant_id: 'tenant-barber', facility_id: 'facility-barber', mrn: 'BAR-003', first_name: 'Ethan', last_name: 'Clark', dob: '2010-08-14', email: 'e.clark@email.com', phone: '602-555-0303', created_at: now(), updated_at: now() },
+    { id: 'pt-bar-4', tenant_id: 'tenant-barber', facility_id: 'facility-barber', mrn: 'BAR-004', first_name: 'Andre', last_name: 'Thompson', dob: '1975-12-03', email: 'a.thompson@email.com', phone: '602-555-0304', created_at: now(), updated_at: now() },
+    { id: 'pt-bar-5', tenant_id: 'tenant-barber', facility_id: 'facility-barber', mrn: 'BAR-005', first_name: 'Carlos', last_name: 'Mendez', dob: '2001-04-20', email: 'c.mendez@email.com', phone: '602-555-0305', created_at: now(), updated_at: now() },
+    // ── Salon patients ──
+    { id: 'pt-sal-1', tenant_id: 'tenant-salon', facility_id: 'facility-salon', mrn: 'SAL-001', first_name: 'Sophia', last_name: 'Anderson', dob: '1993-05-16', email: 's.anderson@email.com', phone: '602-555-0401', created_at: now(), updated_at: now() },
+    { id: 'pt-sal-2', tenant_id: 'tenant-salon', facility_id: 'facility-salon', mrn: 'SAL-002', first_name: 'Emma', last_name: 'Davis', dob: '1987-09-24', email: 'e.davis@email.com', phone: '602-555-0402', created_at: now(), updated_at: now() },
+    { id: 'pt-sal-3', tenant_id: 'tenant-salon', facility_id: 'facility-salon', mrn: 'SAL-003', first_name: 'Olivia', last_name: 'Wilson', dob: '2000-01-08', email: 'o.wilson@email.com', phone: '602-555-0403', created_at: now(), updated_at: now() },
+    { id: 'pt-sal-4', tenant_id: 'tenant-salon', facility_id: 'facility-salon', mrn: 'SAL-004', first_name: 'Ava', last_name: 'Martinez', dob: '1970-11-30', email: 'a.martinez@email.com', phone: '602-555-0404', created_at: now(), updated_at: now() },
+    { id: 'pt-sal-5', tenant_id: 'tenant-salon', facility_id: 'facility-salon', mrn: 'SAL-005', first_name: 'Isabella', last_name: 'Garcia', dob: '1996-07-04', email: 'i.garcia@email.com', phone: '602-555-0405', created_at: now(), updated_at: now() },
+    // ── Clinic patients ──
+    { id: 'pt-cln-1', tenant_id: 'tenant-clinic', facility_id: 'facility-clinic', mrn: 'CLN-001', first_name: 'Michael', last_name: 'Johnson', dob: '1960-02-14', email: 'm.johnson@email.com', phone: '602-555-0501', created_at: now(), updated_at: now() },
+    { id: 'pt-cln-2', tenant_id: 'tenant-clinic', facility_id: 'facility-clinic', mrn: 'CLN-002', first_name: 'Barbara', last_name: 'Smith', dob: '1955-09-03', email: 'b.smith@email.com', phone: '602-555-0502', created_at: now(), updated_at: now() },
+    { id: 'pt-cln-3', tenant_id: 'tenant-clinic', facility_id: 'facility-clinic', mrn: 'CLN-003', first_name: 'William', last_name: 'Brown', dob: '1978-11-22', email: 'w.brown@email.com', phone: '602-555-0503', created_at: now(), updated_at: now() },
+    { id: 'pt-cln-4', tenant_id: 'tenant-clinic', facility_id: 'facility-clinic', mrn: 'CLN-004', first_name: 'Susan', last_name: 'Taylor', dob: '1945-05-30', email: 's.taylor@email.com', phone: '602-555-0504', created_at: now(), updated_at: now() },
+    { id: 'pt-cln-5', tenant_id: 'tenant-clinic', facility_id: 'facility-clinic', mrn: 'CLN-005', first_name: 'Richard', last_name: 'Davis', dob: '1988-08-16', email: 'r.davis@email.com', phone: '602-555-0505', created_at: now(), updated_at: now() },
+    // ── Fitness patients ──
+    { id: 'pt-fit-1', tenant_id: 'tenant-fitness', facility_id: 'facility-fitness', mrn: 'FIT-001', first_name: 'Chris', last_name: 'Evans', dob: '1990-07-15', email: 'c.evans@email.com', phone: '602-555-0601', created_at: now(), updated_at: now() },
+    { id: 'pt-fit-2', tenant_id: 'tenant-fitness', facility_id: 'facility-fitness', mrn: 'FIT-002', first_name: 'Taylor', last_name: 'Swift', dob: '1999-12-13', email: 't.swift@email.com', phone: '602-555-0602', created_at: now(), updated_at: now() },
+    { id: 'pt-fit-3', tenant_id: 'tenant-fitness', facility_id: 'facility-fitness', mrn: 'FIT-003', first_name: 'Sam', last_name: 'Wilson', dob: '1985-04-04', email: 's.wilson@email.com', phone: '602-555-0603', created_at: now(), updated_at: now() },
+    { id: 'pt-fit-4', tenant_id: 'tenant-fitness', facility_id: 'facility-fitness', mrn: 'FIT-004', first_name: 'Jamie', last_name: 'Lee', dob: '2003-09-08', email: 'j.lee@email.com', phone: '602-555-0604', created_at: now(), updated_at: now() },
+    { id: 'pt-fit-5', tenant_id: 'tenant-fitness', facility_id: 'facility-fitness', mrn: 'FIT-005', first_name: 'Robin', last_name: 'Stone', dob: '1975-01-25', email: 'r.stone@email.com', phone: '602-555-0605', created_at: now(), updated_at: now() }
   ],
   appointments: [],
   encounters: [],
@@ -82,60 +162,73 @@ const state = {
   event_trigger_log: eventTriggerLog
 };
 
-// ─── Seed demo appointments for this week + next week ────────────────────────
-(function seedDemoAppointments() {
-  const provIds = state.providers.map(p => p.id);
-  const svcIds = state.services.map(s => s.id);
-  const ptIds = state.patients.map(p => p.id);
+// ─── Seed demo appointments for this week + next week (all industry tenants) ──
+(function seedAllDemoAppointments() {
+  const INDUSTRY_TENANTS = [
+    { tenantId: 'tenant-a',       facilityId: 'facility-main'    },
+    { tenantId: 'tenant-barber',  facilityId: 'facility-barber'  },
+    { tenantId: 'tenant-salon',   facilityId: 'facility-salon'   },
+    { tenantId: 'tenant-spa',     facilityId: 'facility-spa'     },
+    { tenantId: 'tenant-clinic',  facilityId: 'facility-clinic'  },
+    { tenantId: 'tenant-fitness', facilityId: 'facility-fitness' }
+  ];
   const statuses = ['booked', 'booked', 'booked', 'confirmed', 'confirmed', 'checked_in'];
-
   const today = new Date();
-  // seed 7 days starting from yesterday
-  for (let dayOffset = -1; dayOffset <= 7; dayOffset++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() + dayOffset);
-    if (d.getDay() === 0 || d.getDay() === 6) continue; // skip weekends
 
-    const count = 3 + Math.floor(Math.random() * 3); // 3-5 per day
-    const usedSlots = new Set();
+  for (const { tenantId, facilityId } of INDUSTRY_TENANTS) {
+    const provIds = state.providers.filter(p => p.tenant_id === tenantId && p.facility_id === facilityId).map(p => p.id);
+    const svcIds  = state.services.filter(s => s.tenant_id === tenantId && s.facility_id === facilityId).map(s => s.id);
+    const ptIds   = state.patients.filter(p => p.tenant_id === tenantId && p.facility_id === facilityId).map(p => p.id);
 
-    for (let i = 0; i < count; i++) {
-      let hour;
-      do { hour = 9 + Math.floor(Math.random() * 8); } while (usedSlots.has(hour));
-      usedSlots.add(hour);
+    if (!provIds.length || !svcIds.length || !ptIds.length) continue;
 
-      const dateStr = d.toISOString().split('T')[0];
-      const startsAt = `${dateStr}T${String(hour).padStart(2, '0')}:00:00.000Z`;
-      const patientId = ptIds[Math.floor(Math.random() * ptIds.length)];
-      const providerId = provIds[Math.floor(Math.random() * provIds.length)];
-      const serviceId = svcIds[Math.floor(Math.random() * svcIds.length)];
-      const status = statuses[Math.floor(Math.random() * statuses.length)];
+    // seed 7 days starting from yesterday
+    for (let dayOffset = -1; dayOffset <= 7; dayOffset++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + dayOffset);
+      if (d.getDay() === 0 || d.getDay() === 6) continue; // skip weekends
 
-      const patient = state.patients.find(p => p.id === patientId);
-      const service = state.services.find(s => s.id === serviceId);
-      const provider = state.providers.find(p => p.id === providerId);
+      const count = 3 + Math.floor(Math.random() * 3); // 3-5 per day
+      const usedSlots = new Set();
 
-      state.appointments.push({
-        id: randomUUID(),
-        tenant_id: 'tenant-a',
-        facility_id: 'facility-main',
-        patient_id: patientId,
-        provider_id: providerId,
-        service_id: serviceId,
-        starts_at: startsAt,
-        duration_min: service.duration_min,
-        status,
-        notes: null,
-        patient_name: `${patient.first_name} ${patient.last_name}`,
-        provider_name: provider.name,
-        service_name: service.name,
-        service_color: service.color,
-        created_at: now(),
-        updated_at: now()
-      });
+      for (let i = 0; i < count; i++) {
+        let hour;
+        do { hour = 9 + Math.floor(Math.random() * 8); } while (usedSlots.has(hour));
+        usedSlots.add(hour);
+
+        const dateStr = d.toISOString().split('T')[0];
+        const startsAt = `${dateStr}T${String(hour).padStart(2, '0')}:00:00.000Z`;
+        const patientId  = ptIds[Math.floor(Math.random() * ptIds.length)];
+        const providerId = provIds[Math.floor(Math.random() * provIds.length)];
+        const serviceId  = svcIds[Math.floor(Math.random() * svcIds.length)];
+        const status     = statuses[Math.floor(Math.random() * statuses.length)];
+
+        const patient  = state.patients.find(p => p.id === patientId);
+        const service  = state.services.find(s => s.id === serviceId);
+        const provider = state.providers.find(p => p.id === providerId);
+
+        state.appointments.push({
+          id: randomUUID(),
+          tenant_id: tenantId,
+          facility_id: facilityId,
+          patient_id: patientId,
+          provider_id: providerId,
+          service_id: serviceId,
+          starts_at: startsAt,
+          duration_min: service.duration_min,
+          status,
+          notes: null,
+          patient_name: `${patient.first_name} ${patient.last_name}`,
+          provider_name: provider.name,
+          service_name: service.name,
+          service_color: service.color,
+          created_at: now(),
+          updated_at: now()
+        });
+      }
     }
   }
-  console.log(`[Seed] Generated ${state.appointments.length} demo appointments.`);
+  console.log(`[Seed] Generated ${state.appointments.length} demo appointments across all industry tenants.`);
 })();
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
