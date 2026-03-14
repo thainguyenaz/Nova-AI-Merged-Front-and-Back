@@ -407,7 +407,7 @@
 
 <script>
 // ─── State ─────────────────────────────────────────────────────────────────────
-const TOKEN = 'admin-token';  // Default: admin
+let TOKEN = localStorage.getItem('nova_cal_token') || '';
 const API = '';  // Same origin
 
 let providers = [];
@@ -793,15 +793,62 @@ async function reseedDemo() {
   }
 }
 
+// ─── Auto-Login ───────────────────────────────────────────────────────────────
+async function ensureAuth() {
+  // Try a quick health check with existing token
+  if (TOKEN) {
+    try {
+      await apiFetch('/api/appointments/providers');
+      return; // Token works
+    } catch (_) {
+      TOKEN = '';
+      localStorage.removeItem('nova_cal_token');
+    }
+  }
+
+  // Try login with default admin credentials
+  const creds = [
+    { email: 'admin@example.com', password: 'Nova2024!' },
+    { email: 'admin@example.com', password: 'admin123' },
+    { email: 'admin@example.com', password: 'password' }
+  ];
+
+  for (const cred of creds) {
+    try {
+      const res = await fetch(API + '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cred)
+      });
+      const data = await res.json();
+      if (data.accessToken) {
+        TOKEN = data.accessToken;
+        localStorage.setItem('nova_cal_token', TOKEN);
+        console.log('[Auth] Logged in as admin, role:', data.user?.role);
+        return;
+      }
+    } catch (_) {}
+  }
+
+  throw new Error('Auto-login failed. Please log in to the main app first.');
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
   try {
+    await ensureAuth();
     await loadData();
     await loadTriggers();
-    renderCalendar();
-    renderSidebar();
+
+    // Seed demo if no appointments exist
+    if (appointments.length === 0) {
+      await reseedDemo();
+    } else {
+      renderCalendar();
+      renderSidebar();
+    }
   } catch (err) {
-    document.getElementById('calendarGrid').innerHTML = `<div class="loading" style="color:var(--danger)">⚠️ ${err.message}</div>`;
+    document.getElementById('calendarGrid').innerHTML = `<div class="loading" style="color:var(--danger)">⚠️ ${err.message}<br><small>Tip: Log in to the main app first, then return here.</small></div>`;
     console.error(err);
   }
 }
