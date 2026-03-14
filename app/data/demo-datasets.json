@@ -1,0 +1,166 @@
+{
+  "datasets": [
+    {
+      "id": "demo-medspa",
+      "industry": "medspa",
+      "tenant": {
+        "id": "tenant-a",
+        "name": "Glow Med Spa",
+        "industry_type": "medspa"
+      },
+      "facility": {
+        "id": "facility-main",
+        "name": "Glow Med Spa - Scottsdale"
+      },
+      "users": [
+        { "email": "dr.patel@glowmedspa.com", "firstName": "Priya", "lastName": "Patel", "role": "clinician", "industry_type": "medspa" },
+        { "email": "admin@glowmedspa.com", "firstName": "Sarah", "lastName": "Mitchell", "role": "admin", "industry_type": "medspa" },
+        { "email": "front@glowmedspa.com", "firstName": "Ashley", "lastName": "Huang", "role": "scheduler", "industry_type": "medspa" }
+      ],
+      "patients": [
+        { "mrn": "MDS-001", "firstName": "Jennifer", "lastName": "Adams", "dob": "1985-03-14", "note": "Botox x3 sessions, no adverse reactions" },
+        { "mrn": "MDS-002", "firstName": "Maria", "lastName": "Torres", "dob": "1990-07-22", "note": "First-time filler patient, allergy to lidocaine - use alternate" },
+        { "mrn": "MDS-003", "firstName": "Rachel", "lastName": "Kim", "dob": "1978-11-05", "note": "Monthly HydraFacial, VIP member" },
+        { "mrn": "MDS-004", "firstName": "Claire", "lastName": "Watson", "dob": "1992-01-30", "note": "CoolSculpting series - 3 of 6 complete" },
+        { "mrn": "MDS-005", "firstName": "Diane", "lastName": "Novak", "dob": "1968-09-18", "note": "IV Therapy weekly, wellness package" }
+      ],
+      "services": ["Botox", "Dermal Fillers", "HydraFacial", "Laser Hair Removal", "CoolSculpting", "IV Therapy", "Chemical Peel"],
+      "sampleRevenue": { "monthly": 48500, "currency": "USD" }
+    },
+    {
+      "id": "demo-barber",
+      "industry": "barber",
+      "tenant": {
+        "id": "tenant-barber",
+        "name": "Kings & Cuts Barbershop",
+        "industry_type": "barber"
+      },
+      "facility": {
+        "id": "facility-barber",
+        "name": "Kings & Cuts - Main Shop"
+      },
+      "users": [
+        { "email": "marcus@kingscuts.com", "firstName": "Marcus", "lastName": "Johnson", "role": "clinician", "industry_type": "barber" },
+        { "email": "owner@kingscuts.com", "firstName": "Devon", "lastName": "Williams", "role": "admin", "industry_type": "barber" },
+        { "email": "front@kingscuts.com", "firstName": "Keisha", "lastName": "Brown", "role": "scheduler", "industry_type": "barber" }
+      ],
+      "patients": [
+        { "mrn": "BAR-001", "firstName": "Tyler", "lastName": "Moore", "dob": "1995-06-12", "note": "Signature fade, #2 sides #4 top" },
+        { "mrn": "BAR-002", "firstName": "James", "lastName": "Rivera", "dob": "1988-02-28", "note": "Full beard shape, hot towel shave monthly" },
+        { "mrn": "BAR-003", "firstName": "Ethan", "lastName": "Clark", "dob": "2010-08-14", "note": "Kids cut, scissor only (no clippers)" },
+        { "mrn": "BAR-004", "firstName": "Andre", "lastName": "Thompson", "dob": "1975-12-03", "note": "Lineup only, Monday regulars" },
+        { "mrn": "BAR-005", "firstName": "Carlos", "lastName": "Mendez", "dob": "2001-04-20", "note": "Color toner every 6 weeks - ash" }
+      ],
+      "services": ["Men's Haircut", "Beard Trim & Shape", "Fade", "Hot Towel Shave", "Kids Cut", "Color & Toner"],
+      "sampleRevenue": { "monthly": 18200, "currency": "USD" }
+    },
+    {
+      "id": "demo-salon",
+      "industry": "salon",
+      "tenant": {
+        "id": "tenant-salon",
+        "name": "Luxe Hair Salon",
+        "industry_type": "salon"
+      },
+      "facility": {
+        "id": "facility-salon",
+        "name": "Luxe Hair - Downtown"
+      },
+      "users": [
+        { "email": "jessica@luxehair.com", "firstName": "Jessica", "lastName": "Laurent", "role": "clinician", "industry_type": "salon" },
+        { "email": "owner@luxehair.com", "firstName": "Chloe", "lastName": "Bennett", "role": "admin", "industry_type": "salon" },
+        { "email": "front@luxehair.com", "firstName": "Amy", "lastName": "Chen", "role": "scheduler", "industry_type": "salon" }
+      ],
+      "patients": [
+        { "mrn": "SAL-001", "firstName": "Sophia", "lastName": "Anderson", "dob": "1993-05-16", "note": "Balayage every 10 weeks, Olaplex treatment" },
+        { "mrn": "SAL-002", "firstName": "Emma", "lastName": "Davis", "dob": "1987-09-24", "note": "Full color - level 6N, foils on crown" },
+        { "mrn": "SAL-003", "firstName": "Olivia", "lastName": "Wilson", "dob": "2000-01-08", "note": "Biweekly blowout, fine hair - light product" },
+        { "mrn": "SAL-004", "firstName": "Ava", "lastName": "Martinez", "dob": "1970-11-30", "note": "Keratin treatment quarterly, no sulfate shampoo" },
+        { "mrn": "SAL-005", "firstName": "Isabella", "lastName": "Garcia", "dob": "1996-07-04", "note": "Highlights + trim monthly, level 8 blonde target" }
+      ],
+      "services": ["Full Color", "Highlights", "Balayage", "Blowout", "Trim & Style", "Keratin Treatment"],
+      "sampleRevenue": { "monthly": 31400, "currency": "USD" }
+    },
+    {
+      "id": "demo-spa",
+      "industry": "spa",
+      "tenant": {
+        "id": "tenant-spa",
+        "name": "Serenity Day Spa",
+        "industry_type": "spa"
+      },
+      "facility": {
+        "id": "facility-spa",
+        "name": "Serenity Spa - Main"
+      },
+      "users": [
+        { "email": "anna@serenityspa.com", "firstName": "Anna", "lastName": "Kowalski", "role": "clinician", "industry_type": "spa" },
+        { "email": "owner@serenityspa.com", "firstName": "Linda", "lastName": "Park", "role": "admin", "industry_type": "spa" },
+        { "email": "front@serenityspa.com", "firstName": "Mei", "lastName": "Zhang", "role": "scheduler", "industry_type": "spa" }
+      ],
+      "patients": [
+        { "mrn": "SPA-001", "firstName": "Victoria", "lastName": "Hughes", "dob": "1980-04-19", "note": "Monthly 90min deep tissue, lower back focus" },
+        { "mrn": "SPA-002", "firstName": "Natalie", "lastName": "Foster", "dob": "1975-08-07", "note": "Couples package with husband - 1st Sunday monthly" },
+        { "mrn": "SPA-003", "firstName": "Grace", "lastName": "Lee", "dob": "2000-03-25", "note": "Birthday gift package, first-time guest" },
+        { "mrn": "SPA-004", "firstName": "Heather", "lastName": "Scott", "dob": "1965-12-11", "note": "Weekly manicure + pedicure, gel finish" },
+        { "mrn": "SPA-005", "firstName": "Donna", "lastName": "Price", "dob": "1991-06-29", "note": "Prenatal massage only, cleared by OB" }
+      ],
+      "services": ["Swedish Massage 60min", "Deep Tissue 90min", "Signature Facial", "Body Scrub", "Manicure", "Pedicure"],
+      "sampleRevenue": { "monthly": 27600, "currency": "USD" }
+    },
+    {
+      "id": "demo-clinic",
+      "industry": "clinic",
+      "tenant": {
+        "id": "tenant-clinic",
+        "name": "Apex Medical Clinic",
+        "industry_type": "clinic"
+      },
+      "facility": {
+        "id": "facility-clinic",
+        "name": "Apex Clinic - Primary Care"
+      },
+      "users": [
+        { "email": "dr.chen@apexclinic.com", "firstName": "Robert", "lastName": "Chen", "role": "clinician", "industry_type": "clinic" },
+        { "email": "admin@apexclinic.com", "firstName": "Patricia", "lastName": "Mills", "role": "admin", "industry_type": "clinic" },
+        { "email": "front@apexclinic.com", "firstName": "Sandra", "lastName": "Lopez", "role": "scheduler", "industry_type": "clinic" }
+      ],
+      "patients": [
+        { "mrn": "CLN-001", "firstName": "Michael", "lastName": "Johnson", "dob": "1960-02-14", "note": "HTN, DM2 - quarterly A1c monitoring" },
+        { "mrn": "CLN-002", "firstName": "Barbara", "lastName": "Smith", "dob": "1955-09-03", "note": "Annual wellness, flu shot due in Oct" },
+        { "mrn": "CLN-003", "firstName": "William", "lastName": "Brown", "dob": "1978-11-22", "note": "Urgent care established patient - knee pain" },
+        { "mrn": "CLN-004", "firstName": "Susan", "lastName": "Taylor", "dob": "1945-05-30", "note": "Lab work monthly - INR check on warfarin" },
+        { "mrn": "CLN-005", "firstName": "Richard", "lastName": "Davis", "dob": "1988-08-16", "note": "Annual physical, referred to ortho for shoulder" }
+      ],
+      "services": ["Annual Wellness Visit", "Urgent Care Visit", "Lab Work", "Vaccination", "Follow-Up Visit", "Specialist Referral"],
+      "sampleRevenue": { "monthly": 124000, "currency": "USD" }
+    },
+    {
+      "id": "demo-fitness",
+      "industry": "fitness",
+      "tenant": {
+        "id": "tenant-fitness",
+        "name": "Iron & Flow Fitness",
+        "industry_type": "fitness"
+      },
+      "facility": {
+        "id": "facility-fitness",
+        "name": "Iron & Flow - Main Studio"
+      },
+      "users": [
+        { "email": "coach.alex@ironflow.com", "firstName": "Alex", "lastName": "Rivera", "role": "clinician", "industry_type": "fitness" },
+        { "email": "owner@ironflow.com", "firstName": "Jordan", "lastName": "Blake", "role": "admin", "industry_type": "fitness" },
+        { "email": "front@ironflow.com", "firstName": "Morgan", "lastName": "Hayes", "role": "scheduler", "industry_type": "fitness" }
+      ],
+      "patients": [
+        { "mrn": "FIT-001", "firstName": "Chris", "lastName": "Evans", "dob": "1990-07-15", "note": "3x/week PT, powerlifting program - week 8 of 12" },
+        { "mrn": "FIT-002", "firstName": "Taylor", "lastName": "Swift", "dob": "1999-12-13", "note": "Group yoga Tue/Thu, 6AM class" },
+        { "mrn": "FIT-003", "firstName": "Sam", "lastName": "Wilson", "dob": "1985-04-04", "note": "Post-surgery rehab protocol, cleared for light cardio" },
+        { "mrn": "FIT-004", "firstName": "Jamie", "lastName": "Lee", "dob": "2003-09-08", "note": "New member, fitness assessment completed - beginner" },
+        { "mrn": "FIT-005", "firstName": "Robin", "lastName": "Stone", "dob": "1975-01-25", "note": "Nutrition consult monthly + 2x PT, weight loss goal" }
+      ],
+      "services": ["Personal Training 60min", "Personal Training 30min", "Group Fitness Class", "Yoga Class", "Fitness Assessment", "Nutrition Consultation"],
+      "sampleRevenue": { "monthly": 22800, "currency": "USD" }
+    }
+  ]
+}

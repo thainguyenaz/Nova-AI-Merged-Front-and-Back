@@ -14,7 +14,7 @@ const REFRESH_EXPIRY = '7d';
  */
 router.post('/signup', async (req, res, next) => {
   try {
-    const { email, password, firstName, lastName } = req.body;
+    const { email, password, firstName, lastName, industryType } = req.body;
     if (!email || !password) {
       return res.status(400).json({ error: 'EMAIL_PASSWORD_REQUIRED' });
     }
@@ -28,12 +28,17 @@ router.post('/signup', async (req, res, next) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Validate industry type
+    const VALID_INDUSTRIES = ['medspa', 'barber', 'salon', 'spa', 'clinic', 'fitness'];
+    const resolvedIndustry = VALID_INDUSTRIES.includes(industryType) ? industryType : 'medspa';
+
     // Create user
     const user = await repo.createUser({
       email,
       password: hashedPassword,
       firstName: firstName || '',
       lastName: lastName || '',
+      industryType: resolvedIndustry,
     });
 
     // Issue tokens
@@ -48,7 +53,7 @@ router.post('/signup', async (req, res, next) => {
     await repo.saveRefreshToken(user.id, refreshToken);
 
     res.status(201).json({
-      user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName },
+      user: { id: user.id, email: user.email, firstName: user.first_name || user.firstName || '', lastName: user.last_name || user.lastName || '', industryType: user.industry_type || resolvedIndustry },
       accessToken,
       refreshToken,
       expiresIn: 3600,
@@ -94,7 +99,7 @@ router.post('/login', async (req, res, next) => {
     await repo.saveRefreshToken(user.id, refreshToken);
 
     res.json({
-      user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName },
+      user: { id: user.id, email: user.email, firstName: user.first_name || user.firstName || '', lastName: user.last_name || user.lastName || '', industryType: user.industry_type || 'medspa' },
       accessToken,
       refreshToken,
       expiresIn: 3600,
@@ -182,9 +187,52 @@ router.get('/me', requireAuthMiddleware, async (req, res, next) => {
     res.json({
       id: user.id,
       email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      firstName: user.first_name || user.firstName || '',
+      lastName: user.last_name || user.lastName || '',
+      industryType: user.industry_type || 'medspa',
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /api/auth/industry
+ * Update the authenticated user's industry type
+ */
+router.post('/industry', requireAuthMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) return res.status(401).json({ error: 'UNAUTHORIZED' });
+
+    const { industryType } = req.body;
+    const VALID = ['medspa', 'barber', 'salon', 'spa', 'clinic', 'fitness'];
+    if (!industryType || !VALID.includes(industryType)) {
+      return res.status(400).json({ error: 'INVALID_INDUSTRY_TYPE', validValues: VALID });
+    }
+
+    const user = await repo.updateUserIndustry(userId, industryType);
+    if (!user) return res.status(404).json({ error: 'USER_NOT_FOUND' });
+
+    res.json({ ok: true, industryType });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * GET /api/auth/industry
+ * Get the authenticated user's industry type
+ */
+router.get('/industry', requireAuthMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) return res.status(401).json({ error: 'UNAUTHORIZED' });
+
+    const user = await repo.getUserIndustry ? await repo.getUserIndustry(userId) : await repo.getUserById(userId);
+    if (!user) return res.status(404).json({ error: 'USER_NOT_FOUND' });
+
+    res.json({ industryType: user.industry_type || 'medspa' });
   } catch (error) {
     next(error);
   }

@@ -1,13 +1,104 @@
 {
   "source": {
-    "inspectedPath": "frontend config not present in this repository snapshot",
-    "note": "taxonomy captured as medspa frontend domain alignment placeholder; replace from live frontend config when available"
+    "note": "Industry-aware service taxonomy. Each industry has its own service categories and inventory labels.",
+    "version": "2.0.0"
   },
   "businessTypes": {
-    "injectables": ["Botox", "Dermal Fillers", "Kybella"],
-    "laser": ["Laser Hair Removal", "IPL Photofacial", "Laser Resurfacing"],
-    "skin": ["HydraFacial", "Microneedling", "Chemical Peel"],
-    "body": ["CoolSculpting", "Body Contouring Consultation"],
-    "wellness": ["IV Therapy", "Weight Management Consultation"]
+    "injectables": ["Botox", "Dermal Fillers", "Kybella", "Sculptra"],
+    "laser": ["Laser Hair Removal", "IPL Photofacial", "Laser Resurfacing", "Fractional CO2"],
+    "skin": ["HydraFacial", "Microneedling", "Chemical Peel", "Dermaplaning"],
+    "body": ["CoolSculpting", "Body Contouring Consultation", "Radiofrequency Skin Tightening"],
+    "wellness": ["IV Therapy", "Weight Management Consultation", "PRP Treatment"]
+  },
+  "byIndustry": {
+    "medspa": {
+      "label": "Med Spa",
+      "inventoryLabel": "Product Inventory",
+      "clientLabel": "Patient",
+      "serviceLabel": "Treatment",
+      "providerLabel": "Provider",
+      "categories": {
+        "injectables": ["Botox", "Dermal Fillers", "Kybella", "Sculptra"],
+        "laser": ["Laser Hair Removal", "IPL Photofacial", "Laser Resurfacing", "Fractional CO2"],
+        "skin": ["HydraFacial", "Microneedling", "Chemical Peel", "Dermaplaning"],
+        "body": ["CoolSculpting", "Body Contouring Consultation", "Radiofrequency Skin Tightening"],
+        "wellness": ["IV Therapy", "Weight Management Consultation", "PRP Treatment"]
+      },
+      "inventoryCategories": ["Neurotoxins", "Fillers", "Skincare Products", "Consumables", "Equipment Supplies"]
+    },
+    "barber": {
+      "label": "Barber Shop",
+      "inventoryLabel": "Supply Inventory",
+      "clientLabel": "Client",
+      "serviceLabel": "Service",
+      "providerLabel": "Barber",
+      "categories": {
+        "cuts": ["Men's Haircut", "Fade", "Kids Cut", "Line Up", "Buzz Cut"],
+        "grooming": ["Beard Trim & Shape", "Eyebrow Grooming", "Nose & Ear Trim"],
+        "shave": ["Hot Towel Shave", "Straight Razor Shave"],
+        "color": ["Color & Toner", "Beard Color", "Salt & Pepper Blend"]
+      },
+      "inventoryCategories": ["Clippers & Blades", "Shaving Supplies", "Hair Products", "Styling Products", "Sanitization"]
+    },
+    "salon": {
+      "label": "Hair Salon",
+      "inventoryLabel": "Color & Product Inventory",
+      "clientLabel": "Client",
+      "serviceLabel": "Service",
+      "providerLabel": "Stylist",
+      "categories": {
+        "cuts": ["Women's Haircut", "Men's Haircut", "Trim & Style", "Children's Cut"],
+        "color": ["Full Color", "Highlights", "Balayage", "Root Touch Up", "Color Correction"],
+        "styling": ["Blowout", "Updo", "Bridal Style", "Keratin Blowout"],
+        "treatment": ["Keratin Treatment", "Deep Conditioning", "Olaplex Treatment", "Scalp Treatment"],
+        "extensions": ["Tape-In Extensions", "Weft Extensions", "Clip-In Extensions"]
+      },
+      "inventoryCategories": ["Hair Color", "Developer & Lightener", "Retail Products", "Styling Tools", "Backbar Supplies"]
+    },
+    "spa": {
+      "label": "Day Spa",
+      "inventoryLabel": "Retail & Supply Inventory",
+      "clientLabel": "Guest",
+      "serviceLabel": "Treatment",
+      "providerLabel": "Therapist",
+      "categories": {
+        "massage": ["Swedish Massage 60min", "Deep Tissue 90min", "Hot Stone Massage", "Prenatal Massage", "Couples Massage"],
+        "facial": ["Signature Facial", "Anti-Aging Facial", "Brightening Facial", "Acne Facial"],
+        "body": ["Body Scrub", "Body Wrap", "Detox Treatment"],
+        "nails": ["Manicure", "Pedicure", "Gel Manicure", "Spa Pedicure"],
+        "packages": ["Spa Day Package", "Bridal Package", "Couples Package"]
+      },
+      "inventoryCategories": ["Massage Oils & Lotions", "Skincare Products", "Retail Products", "Linens & Supplies", "Candles & Aromatherapy"]
+    },
+    "clinic": {
+      "label": "Medical Clinic",
+      "inventoryLabel": "Medical Supply Inventory",
+      "clientLabel": "Patient",
+      "serviceLabel": "Procedure",
+      "providerLabel": "Physician",
+      "categories": {
+        "primary_care": ["Annual Wellness Visit", "Follow-Up Visit", "Sick Visit"],
+        "urgent_care": ["Urgent Care Visit", "Injury Evaluation", "Minor Procedure"],
+        "diagnostics": ["Lab Work", "X-Ray", "EKG", "Urinalysis"],
+        "preventive": ["Vaccination", "Flu Shot", "Cancer Screening", "Blood Pressure Check"],
+        "specialist": ["Specialist Referral", "Telemedicine Consult"]
+      },
+      "inventoryCategories": ["Medications", "Exam Supplies", "Lab Supplies", "PPE", "Vaccines"]
+    },
+    "fitness": {
+      "label": "Fitness Studio",
+      "inventoryLabel": "Equipment & Supply Inventory",
+      "clientLabel": "Member",
+      "serviceLabel": "Program",
+      "providerLabel": "Trainer",
+      "categories": {
+        "personal_training": ["Personal Training 60min", "Personal Training 30min", "Online Coaching Session"],
+        "group_class": ["Group Fitness Class", "Yoga Class", "HIIT Class", "Spin Class", "Pilates"],
+        "assessment": ["Fitness Assessment", "Body Composition Analysis", "Strength Testing"],
+        "wellness": ["Recovery Session", "Stretch & Mobility", "Meditation Session"],
+        "nutrition": ["Nutrition Consultation", "Meal Plan Review", "Supplement Guidance"]
+      },
+      "inventoryCategories": ["Equipment", "Supplements & Nutrition", "Apparel & Accessories", "Recovery Tools", "Studio Supplies"]
+    }
   }
 }

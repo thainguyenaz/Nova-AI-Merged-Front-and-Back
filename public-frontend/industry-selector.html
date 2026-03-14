@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nova AI — Choose Your Industry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0F0F1A 0%, #1A1A2E 50%, #16213E 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 860px;
+      width: 100%;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.55);
+      font-weight: 300;
+    }
+
+    .heading {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .desc {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 40px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 28px 24px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--color);
+      transform: scaleX(0);
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: var(--color);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    .card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .card.selected {
+      background: rgba(255,255,255,0.1);
+      border-color: var(--color);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color) 30%, transparent);
+    }
+
+    .card.selected::before {
+      transform: scaleX(1);
+    }
+
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .card-label {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+
+    .card-desc {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.4;
+    }
+
+    .card-terminology {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .term-item {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .term-item strong {
+      color: rgba(255,255,255,0.7);
+      font-weight: 500;
+    }
+
+    .check {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--color);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    .card.selected .check {
+      display: flex;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 14px 40px;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3aed, #3b82f6);
+      color: white;
+      min-width: 180px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(124,58,237,0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: rgba(30,30,50,0.95);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 0.9rem;
+      color: #fff;
+      backdrop-filter: blur(10px);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      max-width: 300px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success { border-color: #22c55e; }
+    .toast.error { border-color: #ef4444; }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-top-color: #a78bfa;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      .logo { font-size: 1.6rem; }
+      .heading { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">Nova AI</div>
+      <div class="subtitle">Intelligent Practice Management</div>
+    </div>
+
+    <div class="heading">What type of business are you running?</div>
+    <div class="desc">Nova adapts its terminology, services, and workflows to fit your industry perfectly.</div>
+
+    <div class="loading" id="loading">
+      <span class="spinner"></span> Loading industries...
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="actions">
+      <button class="btn btn-secondary" onclick="window.location.href='/'">← Back to App</button>
+      <button class="btn btn-primary" id="confirmBtn" disabled onclick="confirmSelection()">
+        Confirm Industry
+      </button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let selected = null;
+    let industries = [];
+
+    const TERM_KEYS = ['client', 'provider', 'service', 'appointment', 'inventory'];
+    const TERM_LABELS = { client: 'Client', provider: 'Staff', service: 'Service', appointment: 'Booking', inventory: 'Inventory' };
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast ${type} show`;
+      setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    function renderGrid(data) {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      industries = data;
+
+      // Pre-select from localStorage if available
+      const saved = localStorage.getItem('nova_industry_type');
+
+      data.forEach(ind => {
+        const card = document.createElement('div');
+        card.className = 'card' + (saved === ind.value ? ' selected' : '');
+        card.style.setProperty('--color', ind.color);
+        card.dataset.value = ind.value;
+
+        // Build terminology preview
+        const terms = ind.terminology ? TERM_KEYS.map(k =>
+          `<div class="term-item"><strong>${TERM_LABELS[k]}:</strong> ${ind.terminology[k] || '—'}</div>`
+        ).join('') : '';
+
+        card.innerHTML = `
+          <div class="check">✓</div>
+          <span class="card-icon">${ind.icon}</span>
+          <div class="card-label">${ind.label}</div>
+          <div class="card-desc">${ind.description}</div>
+          ${terms ? `<div class="card-terminology">${terms}</div>` : ''}
+        `;
+
+        card.addEventListener('click', () => selectCard(ind.value));
+        grid.appendChild(card);
+
+        if (saved === ind.value) {
+          selected = ind.value;
+          document.getElementById('confirmBtn').disabled = false;
+        }
+      });
+    }
+
+    function selectCard(value) {
+      selected = value;
+      document.querySelectorAll('.card').forEach(c => {
+        c.classList.toggle('selected', c.dataset.value === value);
+      });
+      document.getElementById('confirmBtn').disabled = false;
+    }
+
+    async function confirmSelection() {
+      if (!selected) return;
+
+      localStorage.setItem('nova_industry_type', selected);
+      const ind = industries.find(i => i.value === selected);
+
+      // Try to save to backend if logged in
+      const token = localStorage.getItem('nova_access_token') || localStorage.getItem('accessToken');
+      if (token) {
+        try {
+          await fetch('/api/auth/industry', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ industryType: selected })
+          });
+        } catch (e) {
+          console.log('Could not save to backend (offline mode):', e.message);
+        }
+      }
+
+      showToast(`✨ ${ind?.label || selected} selected! Redirecting...`, 'success');
+      setTimeout(() => window.location.href = '/', 1200);
+    }
+
+    async function loadIndustries() {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('grid').style.display = 'none';
+      try {
+        // Load labels + terminology in parallel
+        const [labelsRes, configRes] = await Promise.all([
+          fetch('/api/industry/labels'),
+          fetch('/api/industry/config')
+        ]);
+
+        const labelsData = await labelsRes.json();
+        const configData = await configRes.json();
+
+        // Merge terminology into labels
+        const merged = labelsData.data.map(item => ({
+          ...item,
+          terminology: configData.industries[item.value]?.terminology || {}
+        }));
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('grid').style.display = 'grid';
+        renderGrid(merged);
+      } catch (e) {
+        console.error('Failed to load industries:', e);
+        // Fallback static data
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('grid').style.display = 'grid';
+        renderGrid([
+          { value: 'medspa', label: 'Med Spa', icon: '✨', color: '#8B5CF6', description: 'Medical aesthetics & wellness', terminology: { client: 'Patient', provider: 'Provider', service: 'Treatment', appointment: 'Appointment', inventory: 'Product Inventory' } },
+          { value: 'barber', label: 'Barber Shop', icon: '✂️', color: '#1D4ED8', description: 'Barbershop & men\'s grooming', terminology: { client: 'Client', provider: 'Barber', service: 'Service', appointment: 'Booking', inventory: 'Supply Inventory' } },
+          { value: 'salon', label: 'Hair Salon', icon: '💇', color: '#EC4899', description: 'Full-service hair salon', terminology: { client: 'Client', provider: 'Stylist', service: 'Service', appointment: 'Appointment', inventory: 'Color & Product Inventory' } },
+          { value: 'spa', label: 'Day Spa', icon: '🧖', color: '#059669', description: 'Day spa & wellness services', terminology: { client: 'Guest', provider: 'Therapist', service: 'Treatment', appointment: 'Reservation', inventory: 'Retail & Supply Inventory' } },
+          { value: 'clinic', label: 'Medical Clinic', icon: '🏥', color: '#DC2626', description: 'Primary care & medical practice', terminology: { client: 'Patient', provider: 'Physician', service: 'Procedure', appointment: 'Appointment', inventory: 'Medical Supply Inventory' } },
+          { value: 'fitness', label: 'Fitness Studio', icon: '💪', color: '#D97706', description: 'Personal training & fitness', terminology: { client: 'Member', provider: 'Trainer', service: 'Program', appointment: 'Session', inventory: 'Equipment & Supply Inventory' } }
+        ]);
+      }
+    }
+
+    loadIndustries();
+  </script>
+</body>
+</html>

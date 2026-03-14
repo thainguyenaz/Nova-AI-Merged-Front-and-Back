@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nova — Provider Calendar</title>
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --surface2: #22222e;
+      --border: #2e2e3e;
+      --text: #e8e6f0;
+      --text2: #9991bb;
+      --accent: #7c6fe0;
+      --accent2: #a78bfa;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #38bdf8;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header .logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: -0.5px;
+    }
+    .header .logo span { color: var(--text); }
+    .header .nav { display: flex; gap: 8px; margin-left: auto; }
+    .btn {
+      padding: 7px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .btn:hover { background: var(--border); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn.primary:hover { background: var(--accent2); border-color: var(--accent2); }
+    .btn.sm { padding: 4px 10px; font-size: 0.75rem; }
+
+    /* ── Week Nav ── */
+    .week-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .week-nav h2 { font-size: 1rem; font-weight: 600; color: var(--text2); }
+    .week-nav .today-badge {
+      background: var(--accent);
+      color: #fff;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* ── Calendar Layout ── */
+    .calendar-wrap {
+      flex: 1;
+      overflow-x: auto;
+      padding: 16px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      /* time col + 5 day cols */
+      grid-template-columns: 56px repeat(5, minmax(200px, 1fr));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      min-width: 900px;
+    }
+
+    /* Day headers */
+    .day-header {
+      background: var(--surface2);
+      border-bottom: 2px solid var(--border);
+      border-right: 1px solid var(--border);
+      padding: 12px 8px;
+      text-align: center;
+    }
+    .day-header.time-col {
+      background: var(--surface2);
+    }
+    .day-header .day-name { font-size: 0.7rem; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+    .day-header .day-num { font-size: 1.5rem; font-weight: 700; color: var(--text); }
+    .day-header.today .day-num { color: var(--accent2); }
+    .day-header.today { border-bottom-color: var(--accent); }
+
+    /* Provider filter bar */
+    .provider-bar {
+      grid-column: 1 / -1;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .provider-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .provider-chip .avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .provider-chip.active { border-color: currentColor; }
+    .provider-chip:hover { opacity: 0.9; }
+
+    /* Time slots */
+    .time-slot {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 6px 4px;
+      text-align: right;
+      font-size: 0.68rem;
+      color: var(--text2);
+      position: relative;
+    }
+    .time-slot.half { border-bottom-color: rgba(255,255,255,0.03); }
+
+    /* Day cells (drop zones) */
+    .day-cell {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      min-height: 40px;
+      position: relative;
+      transition: background 0.12s;
+    }
+    .day-cell.drag-over {
+      background: rgba(124, 111, 224, 0.12);
+      box-shadow: inset 0 0 0 2px var(--accent);
+    }
+    .day-cell.off-hours { background: rgba(255,255,255,0.01); }
+
+    /* Appointment card */
+    .appt-card {
+      position: absolute;
+      left: 3px;
+      right: 3px;
+      border-radius: 7px;
+      padding: 5px 8px;
+      font-size: 0.75rem;
+      cursor: grab;
+      transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s;
+      user-select: none;
+      overflow: hidden;
+      border-left: 3px solid;
+      z-index: 10;
+      min-height: 32px;
+    }
+    .appt-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      z-index: 20;
+    }
+    .appt-card.dragging {
+      opacity: 0.4;
+      cursor: grabbing;
+    }
+    .appt-card .appt-patient { font-weight: 600; color: #fff; font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .appt-card .appt-service { font-size: 0.68rem; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .appt-card .appt-provider { font-size: 0.65rem; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .appt-card .appt-time { font-size: 0.65rem; opacity: 0.7; }
+
+    /* Status dot */
+    .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+
+    /* Sidebar / Right panel */
+    .layout { display: flex; flex: 1; overflow: hidden; }
+    .main-area { flex: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; }
+    .sidebar {
+      width: 320px;
+      min-width: 280px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); }
+    .sidebar-tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.78rem;
+      cursor: pointer;
+      color: var(--text2);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .sidebar-tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+    .sidebar-content { flex: 1; overflow-y: auto; padding: 12px; }
+
+    /* Event trigger log */
+    .trigger-entry {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      font-size: 0.74rem;
+      border-left: 3px solid;
+    }
+    .trigger-entry.email { border-color: var(--accent); }
+    .trigger-entry.sms { border-color: var(--success); }
+    .trigger-entry .trigger-type { font-weight: 700; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 1px; }
+    .trigger-entry .trigger-to { color: var(--text2); margin-top: 2px; }
+    .trigger-entry .trigger-body { color: var(--text); margin-top: 3px; line-height: 1.4; }
+    .trigger-entry .trigger-time { color: var(--text2); font-size: 0.65rem; margin-top: 4px; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 0.82rem;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      z-index: 999;
+      display: none;
+      max-width: 340px;
+    }
+    #toast.show { display: block; animation: slideIn 0.2s ease; }
+    #toast.success { border-color: var(--success); }
+    #toast.error { border-color: var(--danger); }
+    @keyframes slideIn { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* Reassign modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 380px;
+      max-width: 95vw;
+      box-shadow: var(--shadow);
+    }
+    .modal h3 { font-size: 1rem; margin-bottom: 4px; }
+    .modal p { font-size: 0.8rem; color: var(--text2); margin-bottom: 16px; }
+    .modal .provider-list { display: flex; flex-direction: column; gap: 8px; }
+    .provider-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .provider-option:hover { background: var(--surface2); border-color: var(--accent); }
+    .provider-option .prov-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 0.78rem; }
+    .provider-option .prov-name { font-size: 0.85rem; font-weight: 600; }
+    .provider-option .prov-role { font-size: 0.72rem; color: var(--text2); }
+    .modal-actions { margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* Loading */
+    .loading { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text2); font-size: 0.85rem; }
+    .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Provider legend in sidebar */
+    .provider-card {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .provider-card .av { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 0.82rem; }
+    .provider-card .info .name { font-size: 0.85rem; font-weight: 600; }
+    .provider-card .info .sub { font-size: 0.72rem; color: var(--text2); }
+    .provider-card .count { margin-left: auto; background: var(--border); border-radius: 12px; padding: 2px 8px; font-size: 0.72rem; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">Nova<span> AI</span></div>
+  <span style="color:var(--text2);font-size:0.8rem;">Provider Calendar</span>
+  <div class="nav">
+    <button class="btn sm" onclick="window.location='/'">← Back to App</button>
+    <button class="btn sm primary" onclick="reseedDemo()">🔄 Re-seed Demo</button>
+  </div>
+</div>
+
+<!-- Week Nav -->
+<div class="week-nav">
+  <button class="btn sm" onclick="prevWeek()">← Prev</button>
+  <h2 id="weekLabel">Loading...</h2>
+  <span class="today-badge" id="todayBadge">Today</span>
+  <button class="btn sm" onclick="nextWeek()">Next →</button>
+  <button class="btn sm" onclick="goToday()" style="margin-left:4px">Today</button>
+</div>
+
+<!-- Main layout -->
+<div class="layout">
+  <div class="main-area">
+    <div class="calendar-wrap">
+      <div id="calendarGrid" class="calendar-grid">
+        <div class="loading"><div class="spinner"></div>Loading calendar…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-tabs">
+      <div class="sidebar-tab active" onclick="switchTab('providers')" id="tab-providers">Providers</div>
+      <div class="sidebar-tab" onclick="switchTab('triggers')" id="tab-triggers">Event Triggers</div>
+    </div>
+    <div class="sidebar-content" id="sidebarContent">
+      <div class="loading"><div class="spinner"></div>Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- Reassign Modal -->
+<div class="modal-overlay" id="reassignModal">
+  <div class="modal">
+    <h3>Reassign Appointment</h3>
+    <p id="reassignInfo">Drag detected — confirm reassignment</p>
+    <div class="provider-list" id="reassignProviderList"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ─── State ─────────────────────────────────────────────────────────────────────
+const TOKEN = 'admin-token';  // Default: admin
+const API = '';  // Same origin
+
+let providers = [];
+let appointments = [];
+let weekOffset = 0;
+let dragData = null;  // { apptId, apptEl, fromProviderId, fromDate }
+let currentTab = 'providers';
+let providerFilter = new Set(); // empty = show all
+let triggers = [];
+
+// ─── Utilities ──────────────────────────────────────────────────────────────────
+function fmt(date, opts) { return new Date(date).toLocaleDateString('en-US', opts); }
+function fmtTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function getWeekDays(offsetWeeks = 0) {
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + offsetWeeks * 7);
+  return Array.from({ length: 5 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+}
+
+function dateKey(d) {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function isToday(d) {
+  const t = new Date();
+  return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
+}
+
+function statusColor(status) {
+  const map = { booked: '#6366f1', confirmed: '#22c55e', checked_in: '#f59e0b', completed: '#14b8a6', cancelled: '#ef4444' };
+  return map[status] || '#6B7280';
+}
+
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  setTimeout(() => { el.className = ''; }, 3500);
+}
+
+// ─── API calls ─────────────────────────────────────────────────────────────────
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(API + path, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`,
+      'X-Tenant-Id': 'tenant-a',
+      'X-Facility-Id': 'facility-main',
+      ...(opts.headers || {})
+    }
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'API Error');
+  return json;
+}
+
+async function loadData() {
+  const [provRes, apptRes] = await Promise.all([
+    apiFetch('/api/appointments/providers'),
+    apiFetch('/api/appointments')
+  ]);
+  providers = provRes.data;
+  appointments = apptRes.data;
+}
+
+async function loadTriggers() {
+  const res = await apiFetch('/api/appointments/event-triggers?limit=50');
+  triggers = res.data;
+}
+
+async function reassignAPI(apptId, newProviderId) {
+  const res = await apiFetch(`/api/appointments/${apptId}/reassign`, {
+    method: 'PATCH',
+    body: JSON.stringify({ newProviderId })
+  });
+  return res.data;
+}
+
+// ─── Render ─────────────────────────────────────────────────────────────────────
+function renderCalendar() {
+  const days = getWeekDays(weekOffset);
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+
+  // Week label
+  const start = days[0]; const end = days[4];
+  document.getElementById('weekLabel').textContent =
+    `${fmt(start, {month:'short', day:'numeric'})} – ${fmt(end, {month:'short', day:'numeric', year:'numeric'})}`;
+  document.getElementById('todayBadge').style.display =
+    days.some(d => isToday(d)) ? '' : 'none';
+
+  // Provider filter bar
+  const bar = document.createElement('div');
+  bar.className = 'provider-bar';
+  bar.style.gridColumn = '1 / -1';
+  const allBtn = document.createElement('span');
+  allBtn.className = `provider-chip ${providerFilter.size === 0 ? 'active' : ''}`;
+  allBtn.style.cssText = `background:rgba(124,111,224,0.15); color:#a78bfa;`;
+  allBtn.innerHTML = `All Providers`;
+  allBtn.onclick = () => { providerFilter.clear(); renderCalendar(); renderSidebar(); };
+  bar.appendChild(allBtn);
+
+  providers.forEach(p => {
+    const chip = document.createElement('span');
+    chip.className = `provider-chip ${providerFilter.has(p.id) ? 'active' : ''}`;
+    chip.style.cssText = `background:${p.color}22; color:${p.color};`;
+    chip.innerHTML = `<span class="avatar" style="background:${p.color}">${p.avatar}</span>${p.name.split(' ')[0]}`;
+    chip.onclick = () => {
+      if (providerFilter.has(p.id)) providerFilter.delete(p.id);
+      else providerFilter.add(p.id);
+      renderCalendar(); renderSidebar();
+    };
+    bar.appendChild(chip);
+  });
+  grid.appendChild(bar);
+
+  // Time column header
+  const timeHeader = document.createElement('div');
+  timeHeader.className = 'day-header time-col';
+  grid.appendChild(timeHeader);
+
+  // Day headers
+  days.forEach(d => {
+    const h = document.createElement('div');
+    h.className = `day-header${isToday(d) ? ' today' : ''}`;
+    h.innerHTML = `<div class="day-name">${fmt(d, {weekday:'short'})}</div><div class="day-num">${d.getDate()}</div>`;
+    grid.appendChild(h);
+  });
+
+  // Hours: 8am–7pm (in 1-hour rows)
+  const HOURS = Array.from({ length: 12 }, (_, i) => i + 8);
+
+  // Build a map: date → hour → [appts]
+  const apptMap = {};
+  appointments.forEach(a => {
+    if (providerFilter.size > 0 && !providerFilter.has(a.provider_id)) return;
+    const d = new Date(a.starts_at);
+    const dk = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const h = d.getHours();
+    if (!apptMap[dk]) apptMap[dk] = {};
+    if (!apptMap[dk][h]) apptMap[dk][h] = [];
+    apptMap[dk][h].push(a);
+  });
+
+  HOURS.forEach(hour => {
+    // Time label
+    const tl = document.createElement('div');
+    tl.className = 'time-slot';
+    const ampm = hour < 12 ? 'am' : 'pm';
+    const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    tl.textContent = `${h12}${ampm}`;
+    grid.appendChild(tl);
+
+    // Day cells
+    days.forEach(d => {
+      const cell = document.createElement('div');
+      cell.className = 'day-cell';
+      if (hour < 9 || hour > 17) cell.classList.add('off-hours');
+
+      const dk = dateKey(d);
+      const appts = apptMap[dk]?.[hour] || [];
+
+      const total = appts.length;
+      appts.forEach((a, idx) => {
+        const card = renderApptCard(a, total, idx);
+        cell.appendChild(card);
+      });
+
+      // Drag-over drop zone
+      cell.dataset.date = dk;
+      cell.dataset.hour = hour;
+
+      cell.addEventListener('dragover', e => {
+        e.preventDefault();
+        cell.classList.add('drag-over');
+      });
+      cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
+      cell.addEventListener('drop', e => {
+        e.preventDefault();
+        cell.classList.remove('drag-over');
+        handleCellDrop(cell, e);
+      });
+
+      grid.appendChild(cell);
+    });
+  });
+}
+
+function renderApptCard(a, total, idx) {
+  const card = document.createElement('div');
+  card.className = 'appt-card';
+  card.dataset.apptId = a.id;
+  card.dataset.providerId = a.provider_id || '';
+
+  const prov = providers.find(p => p.id === a.provider_id);
+  const cardBg = a.service_color ? `${a.service_color}22` : 'rgba(99,102,241,0.15)';
+  const cardBorder = a.service_color || '#6366f1';
+
+  card.style.cssText = `
+    background: ${cardBg};
+    border-left-color: ${cardBorder};
+    top: ${4 + idx * 38}px;
+  `;
+
+  const statusC = statusColor(a.status);
+
+  card.innerHTML = `
+    <div class="appt-patient">
+      <span class="status-dot" style="background:${statusC}"></span>${a.patient_name || 'Patient'}
+    </div>
+    <div class="appt-service">${a.service_name || 'Service'}</div>
+    <div class="appt-provider">👤 ${a.provider_name || 'Unassigned'}</div>
+    <div class="appt-time">${fmtTime(a.starts_at)}</div>
+  `;
+
+  // Drag events
+  card.draggable = true;
+  card.addEventListener('dragstart', e => {
+    dragData = { apptId: a.id, fromProviderId: a.provider_id, appointment: a };
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', a.id);
+  });
+  card.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
+  });
+
+  return card;
+}
+
+// ─── Drag Drop Handler ─────────────────────────────────────────────────────────
+function handleCellDrop(cell, e) {
+  if (!dragData) return;
+
+  const { apptId, fromProviderId } = dragData;
+
+  // When dropping on a cell, open reassign modal to pick new provider
+  showReassignModal(apptId, fromProviderId);
+}
+
+function showReassignModal(apptId, currentProviderId) {
+  const appt = appointments.find(a => a.id === apptId);
+  if (!appt) return;
+
+  document.getElementById('reassignInfo').innerHTML =
+    `<strong>${appt.patient_name}</strong> · ${appt.service_name}<br>
+     Currently with: <em>${appt.provider_name || 'Unassigned'}</em>`;
+
+  const list = document.getElementById('reassignProviderList');
+  list.innerHTML = '';
+
+  providers.forEach(p => {
+    const opt = document.createElement('div');
+    opt.className = 'provider-option';
+    if (p.id === currentProviderId) opt.style.opacity = '0.5';
+    opt.innerHTML = `
+      <div class="prov-avatar" style="background:${p.color}">${p.avatar}</div>
+      <div>
+        <div class="prov-name">${p.name}</div>
+        <div class="prov-role">${p.role} · ${p.specialty}</div>
+      </div>
+      ${p.id === currentProviderId ? '<span style="margin-left:auto;font-size:0.7rem;color:var(--text2)">Current</span>' : ''}
+    `;
+    if (p.id !== currentProviderId) {
+      opt.onclick = () => confirmReassign(apptId, p.id);
+    }
+    list.appendChild(opt);
+  });
+
+  document.getElementById('reassignModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('reassignModal').classList.remove('show');
+  dragData = null;
+}
+
+async function confirmReassign(apptId, newProviderId) {
+  closeModal();
+  try {
+    const updated = await reassignAPI(apptId, newProviderId);
+    // Update local state
+    const idx = appointments.findIndex(a => a.id === apptId);
+    if (idx !== -1) appointments[idx] = updated;
+
+    const newProv = providers.find(p => p.id === newProviderId);
+    toast(`✅ Reassigned to ${newProv?.name || 'provider'}`, 'success');
+
+    // Reload triggers in background
+    await loadTriggers();
+    renderCalendar();
+    renderSidebar();
+  } catch (err) {
+    toast(`❌ ${err.message}`, 'error');
+  }
+}
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  renderSidebar();
+}
+
+function renderSidebar() {
+  const el = document.getElementById('sidebarContent');
+
+  if (currentTab === 'providers') {
+    el.innerHTML = '';
+    providers.forEach(p => {
+      // Count appointments this week
+      const days = getWeekDays(weekOffset);
+      const weekKeys = days.map(d => dateKey(d));
+      const count = appointments.filter(a =>
+        a.provider_id === p.id &&
+        weekKeys.some(k => a.starts_at.startsWith(k))
+      ).length;
+
+      const card = document.createElement('div');
+      card.className = 'provider-card';
+      card.innerHTML = `
+        <div class="av" style="background:${p.color}">${p.avatar}</div>
+        <div class="info">
+          <div class="name">${p.name}</div>
+          <div class="sub">${p.role} · ${p.specialty}</div>
+        </div>
+        <span class="count">${count} appts</span>
+      `;
+      el.appendChild(card);
+    });
+
+  } else if (currentTab === 'triggers') {
+    el.innerHTML = '';
+    if (triggers.length === 0) {
+      el.innerHTML = '<div style="color:var(--text2);font-size:0.8rem;text-align:center;padding:24px">No triggers yet.<br>Reassign an appointment to fire one.</div>';
+      return;
+    }
+    triggers.slice(0, 30).forEach(t => {
+      const entry = document.createElement('div');
+      entry.className = `trigger-entry ${t.type}`;
+      entry.innerHTML = `
+        <div class="trigger-type" style="color:${t.type === 'email' ? 'var(--accent2)' : 'var(--success)'}">${t.type === 'email' ? '📧 Email' : '💬 SMS'}</div>
+        <div class="trigger-to">To: ${t.to}</div>
+        ${t.subject ? `<div class="trigger-body"><strong>${t.subject}</strong></div>` : ''}
+        <div class="trigger-body">${t.body}</div>
+        <div class="trigger-time">${new Date(t.fired_at).toLocaleString()}</div>
+      `;
+      el.appendChild(entry);
+    });
+  }
+}
+
+// ─── Week Nav ─────────────────────────────────────────────────────────────────
+function prevWeek() { weekOffset--; renderCalendar(); renderSidebar(); }
+function nextWeek() { weekOffset++; renderCalendar(); renderSidebar(); }
+function goToday() { weekOffset = 0; renderCalendar(); renderSidebar(); }
+
+// ─── Re-seed ─────────────────────────────────────────────────────────────────
+async function reseedDemo() {
+  try {
+    toast('🔄 Re-seeding demo data…');
+    const res = await apiFetch('/api/appointments/seed-demo', { method: 'POST' });
+    const [, apptRes] = await Promise.all([loadTriggers(), apiFetch('/api/appointments')]);
+    appointments = apptRes.data;
+    renderCalendar();
+    renderSidebar();
+    toast(`✅ Seeded ${res.data.seeded} appointments`, 'success');
+  } catch (err) {
+    toast(`❌ ${err.message}`, 'error');
+  }
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    await loadData();
+    await loadTriggers();
+    renderCalendar();
+    renderSidebar();
+  } catch (err) {
+    document.getElementById('calendarGrid').innerHTML = `<div class="loading" style="color:var(--danger)">⚠️ ${err.message}</div>`;
+    console.error(err);
+  }
+}
+
+init();
+</script>
+</body>
+</html>

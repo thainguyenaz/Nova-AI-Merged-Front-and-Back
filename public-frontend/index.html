@@ -11,10 +11,68 @@
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font-family: 'DM Sans', system-ui, sans-serif; background: #FAF9F7; }
     </style>
-    <script type="module" crossorigin src="/assets/index-BVgWveEp.js"></script>
+    <script type="module" crossorigin src="/assets/index-BA09iniQ.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-BqJkv5e0.css">
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Nova Industry Context — injects industry terminology into window.novaIndustry -->
+    <script>
+    (function() {
+      const INDUSTRY_CONFIG = {
+        medspa:  { label: 'Med Spa', icon: '✨', color: '#8B5CF6', client: 'Patient', clients: 'Patients', provider: 'Provider', service: 'Treatment', services: 'Treatments', appointment: 'Appointment', inventory: 'Product Inventory', inventoryItem: 'Product / Supply', notes: 'Treatment Notes', encounter: 'Treatment Session', room: 'Treatment Room', intake: 'Patient Intake', chart: 'Patient Chart' },
+        barber:  { label: 'Barber Shop', icon: '✂️', color: '#1D4ED8', client: 'Client', clients: 'Clients', provider: 'Barber', service: 'Service', services: 'Services', appointment: 'Booking', inventory: 'Supply Inventory', inventoryItem: 'Product / Supply', notes: 'Style Notes', encounter: 'Visit', room: 'Chair', intake: 'Client Check-In', chart: 'Client Profile' },
+        salon:   { label: 'Hair Salon', icon: '💇', color: '#EC4899', client: 'Client', clients: 'Clients', provider: 'Stylist', service: 'Service', services: 'Services', appointment: 'Appointment', inventory: 'Color & Product Inventory', inventoryItem: 'Product / Color', notes: 'Style Notes', encounter: 'Visit', room: 'Station', intake: 'Client Consultation', chart: 'Client Card' },
+        spa:     { label: 'Day Spa', icon: '🧖', color: '#059669', client: 'Guest', clients: 'Guests', provider: 'Therapist', service: 'Treatment', services: 'Treatments', appointment: 'Reservation', inventory: 'Retail & Supply Inventory', inventoryItem: 'Product / Supply', notes: 'Treatment Notes', encounter: 'Treatment', room: 'Treatment Room', intake: 'Guest Intake', chart: 'Guest Profile' },
+        clinic:  { label: 'Medical Clinic', icon: '🏥', color: '#DC2626', client: 'Patient', clients: 'Patients', provider: 'Physician', service: 'Procedure', services: 'Procedures', appointment: 'Appointment', inventory: 'Medical Supply Inventory', inventoryItem: 'Medical Supply', notes: 'Clinical Notes', encounter: 'Encounter', room: 'Exam Room', intake: 'Patient Intake', chart: 'Medical Chart' },
+        fitness: { label: 'Fitness Studio', icon: '💪', color: '#D97706', client: 'Member', clients: 'Members', provider: 'Trainer', service: 'Program', services: 'Programs', appointment: 'Session', inventory: 'Equipment & Supply Inventory', inventoryItem: 'Equipment / Supply', notes: 'Training Notes', encounter: 'Session', room: 'Training Area', intake: 'Member Onboarding', chart: 'Member Profile' }
+      };
+
+      const industryType = localStorage.getItem('nova_industry_type') || 'medspa';
+      const config = INDUSTRY_CONFIG[industryType] || INDUSTRY_CONFIG.medspa;
+
+      // Expose globally for React app and any other scripts
+      window.novaIndustry = { type: industryType, ...config, config: INDUSTRY_CONFIG };
+
+      // Inject a small top banner to show current industry (dismissable)
+      function injectBanner() {
+        const bannerKey = 'nova_banner_dismissed_' + industryType;
+        if (sessionStorage.getItem(bannerKey)) return;
+
+        const banner = document.createElement('div');
+        banner.id = 'nova-industry-banner';
+        banner.style.cssText = [
+          'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:9999',
+          'background:' + config.color, 'color:#fff',
+          'padding:8px 16px', 'display:flex', 'align-items:center',
+          'justify-content:space-between', 'font-family:DM Sans,system-ui,sans-serif',
+          'font-size:13px', 'font-weight:500', 'line-height:1',
+          'box-shadow:0 2px 8px rgba(0,0,0,0.2)'
+        ].join(';');
+
+        banner.innerHTML = `
+          <span>${config.icon} Nova AI — ${config.label} Mode &nbsp;·&nbsp; Clients are called <strong>${config.client}s</strong> &nbsp;·&nbsp; Services are called <strong>${config.services}</strong> &nbsp;·&nbsp; Inventory: <strong>${config.inventory}</strong></span>
+          <span style="display:flex;gap:10px;align-items:center">
+            <a href="/industry-selector.html" style="color:#fff;text-decoration:none;opacity:0.85;font-size:12px;border:1px solid rgba(255,255,255,0.4);padding:3px 10px;border-radius:20px;white-space:nowrap">Change Industry</a>
+            <button onclick="document.getElementById('nova-industry-banner').remove();sessionStorage.setItem('${bannerKey}','1')" style="background:none;border:none;color:#fff;cursor:pointer;font-size:16px;opacity:0.7;padding:0 4px">×</button>
+          </span>
+        `;
+
+        document.body.insertBefore(banner, document.body.firstChild);
+
+        // Push app content down slightly
+        const root = document.getElementById('root');
+        if (root) root.style.paddingTop = '38px';
+      }
+
+      // Wait for DOM then inject
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', injectBanner);
+      } else {
+        injectBanner();
+      }
+    })();
+    </script>
   </body>
 </html>
