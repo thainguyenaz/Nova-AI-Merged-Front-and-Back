@@ -1,0 +1,13 @@
+{
+  "source": {
+    "inspectedPath": "frontend config not present in this repository snapshot",
+    "note": "taxonomy captured as medspa frontend domain alignment placeholder; replace from live frontend config when available"
+  },
+  "businessTypes": {
+    "injectables": ["Botox", "Dermal Fillers", "Kybella"],
+    "laser": ["Laser Hair Removal", "IPL Photofacial", "Laser Resurfacing"],
+    "skin": ["HydraFacial", "Microneedling", "Chemical Peel"],
+    "body": ["CoolSculpting", "Body Contouring Consultation"],
+    "wellness": ["IV Therapy", "Weight Management Consultation"]
+  }
+}

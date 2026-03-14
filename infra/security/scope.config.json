@@ -1,0 +1,6 @@
+{
+  "projectId": "nova-exec-ai",
+  "allowedRepoRoots": ["/home/openclaw/projects/nova-exec-ai"],
+  "allowedSharePointRoots": ["Jarvis Workspace/NOVA-EXEC-AI"],
+  "allowedDatabases": ["nova_exec_ai"]
+}
