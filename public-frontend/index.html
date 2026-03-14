@@ -217,30 +217,9 @@
         const bannerKey = 'nova_banner_dismissed_' + industryType;
         if (sessionStorage.getItem(bannerKey)) return;
 
-        const banner = document.createElement('div');
-        banner.id = 'nova-industry-banner';
-        banner.style.cssText = [
-          'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:9999',
-          'background:' + config.color, 'color:#fff',
-          'padding:8px 16px', 'display:flex', 'align-items:center',
-          'justify-content:space-between', 'font-family:DM Sans,system-ui,sans-serif',
-          'font-size:13px', 'font-weight:500', 'line-height:1',
-          'box-shadow:0 2px 8px rgba(0,0,0,0.2)'
-        ].join(';');
-
-        banner.innerHTML = `
-          <span>${config.icon} Nova AI — ${config.label} Mode &nbsp;·&nbsp; Clients are called <strong>${config.client}s</strong> &nbsp;·&nbsp; Services are called <strong>${config.services}</strong> &nbsp;·&nbsp; Inventory: <strong>${config.inventory}</strong></span>
-          <span style="display:flex;gap:10px;align-items:center">
-            <a href="/industry-selector.html" style="color:#fff;text-decoration:none;opacity:0.85;font-size:12px;border:1px solid rgba(255,255,255,0.4);padding:3px 10px;border-radius:20px;white-space:nowrap">Change Industry</a>
-            <button onclick="document.getElementById('nova-industry-banner').remove();sessionStorage.setItem('${bannerKey}','1')" style="background:none;border:none;color:#fff;cursor:pointer;font-size:16px;opacity:0.7;padding:0 4px">×</button>
-          </span>
-        `;
-
-        document.body.insertBefore(banner, document.body.firstChild);
-
-        // Push app content down slightly
-        const root = document.getElementById('root');
-        if (root) root.style.paddingTop = '38px';
+        // DISABLED: Purple header banner removed per user request
+        // const banner = document.createElement('div');
+        // (banner creation code removed)
       }
 
       // Wait for DOM then inject
