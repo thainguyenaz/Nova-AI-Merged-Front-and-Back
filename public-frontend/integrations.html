@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nova — API Integration Status</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d2e;
+      --surface2: #232640;
+      --border: #2e3250;
+      --text: #e2e8f0;
+      --muted: #7c85a3;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header .subtitle {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .refresh-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+    .refresh-btn:hover { background: var(--border); }
+    .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .last-checked {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.3s;
+    }
+
+    .card.connected    { border-left: 3px solid var(--green); }
+    .card.error        { border-left: 3px solid var(--red); }
+    .card.loading      { border-left: 3px solid var(--yellow); }
+    .card.unconfigured { border-left: 3px solid var(--muted); }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .icon-qbo            { background: rgba(45,156,219,0.2); }
+    .icon-twilio         { background: rgba(244,72,28,0.2); }
+    .icon-mailchimp      { background: rgba(255,224,0,0.2); }
+    .icon-googlebusiness { background: rgba(66,133,244,0.2); }
+    .icon-openai         { background: rgba(16,163,127,0.2); }
+
+    .card-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .card-key {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-connected    { background: rgba(34,197,94,0.15); color: var(--green); }
+    .badge-error        { background: rgba(239,68,68,0.15); color: var(--red); }
+    .badge-loading      { background: rgba(245,158,11,0.15); color: var(--yellow); }
+    .badge-unconfigured { background: rgba(124,133,163,0.15); color: var(--muted); }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-connected    { background: var(--green); animation: pulse-green 2s infinite; }
+    .dot-error        { background: var(--red); }
+    .dot-loading      { background: var(--yellow); animation: pulse-yellow 1s infinite; }
+    .dot-unconfigured { background: var(--muted); }
+
+    @keyframes pulse-green {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    @keyframes pulse-yellow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .card-message {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+      min-height: 36px;
+      line-height: 1.5;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .latency {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    .latency.fast   { color: var(--green); }
+    .latency.medium { color: var(--yellow); }
+    .latency.slow   { color: var(--red); }
+
+    .test-btn {
+      width: 100%;
+      padding: 9px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .test-btn:hover:not(:disabled) { background: var(--blue); border-color: var(--blue); }
+    .test-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .docs-link {
+      display: block;
+      text-align: center;
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: var(--blue);
+      text-decoration: none;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .docs-link:hover { opacity: 1; }
+
+    .summary-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .summary-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+    }
+
+    .summary-count {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+      margin-top: 32px;
+    }
+
+    .creds-table {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .creds-table th {
+      background: var(--surface2);
+      padding: 10px 14px;
+      text-align: left;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .creds-table td {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .creds-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .var-name {
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: var(--purple);
+      background: rgba(139,92,246,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .required-badge {
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .required-badge.required { background: rgba(239,68,68,0.15); color: var(--red); }
+    .required-badge.optional { background: rgba(124,133,163,0.1); color: var(--muted); }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: 1fr; }
+      header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>🔌 API Integration Status</h1>
+      <div class="subtitle">Nova Medspa Platform — External Service Connections</div>
+    </div>
+    <button class="refresh-btn" id="refreshAllBtn" onclick="testAll()">↻ Test All</button>
+  </header>
+
+  <div class="last-checked" id="lastChecked">Never checked</div>
+
+  <div class="summary-bar" id="summaryBar">
+    <div class="summary-item"><span class="summary-count" id="countConnected" style="color:var(--green)">—</span><span>Connected</span></div>
+    <div class="summary-item"><span class="summary-count" id="countError" style="color:var(--red)">—</span><span>Error</span></div>
+    <div class="summary-item"><span class="summary-count" id="countMissing" style="color:var(--muted)">—</span><span>Not Configured</span></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="section-title" style="margin-top:40px">📋 Required Credentials Reference</div>
+  <div id="credsSection"><div style="color:var(--muted);font-size:0.85rem">Loading credential docs…</div></div>
+
+<script>
+  const API_BASE = window.location.origin;
+
+  const INTEGRATIONS = [
+    { key: 'qbo',            name: 'QuickBooks Online', icon: '💰', iconClass: 'icon-qbo',            docs: 'https://developer.intuit.com/app/developer/qbo/docs' },
+    { key: 'twilio',         name: 'Twilio',            icon: '📱', iconClass: 'icon-twilio',         docs: 'https://www.twilio.com/docs/usage/api' },
+    { key: 'mailchimp',      name: 'Mailchimp',         icon: '✉️',  iconClass: 'icon-mailchimp',      docs: 'https://mailchimp.com/developer/marketing/api/' },
+    { key: 'googlebusiness', name: 'Google Business',   icon: '📍', iconClass: 'icon-googlebusiness', docs: 'https://developers.google.com/my-business/reference/rest' },
+    { key: 'openai',         name: 'OpenAI',            icon: '🤖', iconClass: 'icon-openai',         docs: 'https://platform.openai.com/docs/api-reference' },
+  ];
+
+  const state = {};
+  INTEGRATIONS.forEach(i => { state[i.key] = { status: 'idle', message: 'Click "Test Connection" to check', latencyMs: null }; });
+
+  function getCardClass(st) {
+    if (st === 'CONNECTED') return 'connected';
+    if (st === 'MISSING_CREDENTIALS' || st === 'idle') return 'unconfigured';
+    if (['loading', 'TESTING'].includes(st)) return 'loading';
+    return 'error';
+  }
+
+  function getBadgeClass(st) {
+    if (st === 'CONNECTED') return 'badge-connected';
+    if (st === 'MISSING_CREDENTIALS' || st === 'idle') return 'badge-unconfigured';
+    if (['loading', 'TESTING'].includes(st)) return 'badge-loading';
+    return 'badge-error';
+  }
+
+  function getDotClass(st) {
+    if (st === 'CONNECTED') return 'dot-connected';
+    if (st === 'MISSING_CREDENTIALS' || st === 'idle') return 'dot-unconfigured';
+    if (['loading', 'TESTING'].includes(st)) return 'dot-loading';
+    return 'dot-error';
+  }
+
+  function getStatusLabel(st) {
+    if (st === 'idle') return 'Not Tested';
+    if (st === 'CONNECTED') return 'Connected';
+    if (st === 'MISSING_CREDENTIALS') return 'Not Configured';
+    if (st === 'UNAUTHORIZED') return 'Auth Failed';
+    if (st === 'RATE_LIMITED') return 'Rate Limited';
+    if (st === 'FORBIDDEN') return 'Forbidden';
+    if (['loading', 'TESTING'].includes(st)) return 'Testing…';
+    return st || 'Error';
+  }
+
+  function latencyClass(ms) {
+    if (!ms) return '';
+    if (ms < 500) return 'fast';
+    if (ms < 2000) return 'medium';
+    return 'slow';
+  }
+
+  function renderCard(integ) {
+    const s = state[integ.key];
+    const cardClass = getCardClass(s.status);
+    const isLoading = ['loading', 'TESTING'].includes(s.status);
+    return `
+      <div class="card ${cardClass}" id="card-${integ.key}">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="card-icon ${integ.iconClass}">${integ.icon}</div>
+            <div>
+              <div class="card-name">${integ.name}</div>
+              <div class="card-key">${integ.key}</div>
+            </div>
+          </div>
+          <span class="status-badge ${getBadgeClass(s.status)}">
+            <span class="dot ${getDotClass(s.status)}"></span>
+            ${isLoading ? '<span class="spinner"></span>' : ''}
+            ${getStatusLabel(s.status)}
+          </span>
+        </div>
+        <div class="card-message">${s.message || '—'}</div>
+        <div class="card-meta">
+          <span class="latency ${s.latencyMs ? latencyClass(s.latencyMs) : ''}">${s.latencyMs ? s.latencyMs + 'ms' : ''}</span>
+        </div>
+        <button class="test-btn" id="btn-${integ.key}" onclick="testSingle('${integ.key}')" ${isLoading ? 'disabled' : ''}>
+          ${isLoading ? '<span class="spinner"></span> Testing…' : '⚡ Test Connection'}
+        </button>
+        <a class="docs-link" href="${integ.docs}" target="_blank" rel="noopener">📖 Docs & Setup Guide ↗</a>
+      </div>
+    `;
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = INTEGRATIONS.map(renderCard).join('');
+    updateSummary();
+  }
+
+  function updateSummary() {
+    const vals = Object.values(state);
+    document.getElementById('countConnected').textContent = vals.filter(s => s.status === 'CONNECTED').length;
+    document.getElementById('countError').textContent = vals.filter(s => !['CONNECTED','MISSING_CREDENTIALS','idle','loading','TESTING'].includes(s.status)).length;
+    document.getElementById('countMissing').textContent = vals.filter(s => s.status === 'MISSING_CREDENTIALS').length;
+  }
+
+  async function testSingle(key) {
+    state[key] = { status: 'loading', message: 'Testing connection…', latencyMs: null };
+    renderGrid();
+
+    try {
+      const res = await fetch(`${API_BASE}/api/integrations/test/${key}`, { method: 'POST' });
+      const data = await res.json();
+      state[key] = { status: data.status || (data.ok ? 'CONNECTED' : 'ERROR'), message: data.message, latencyMs: data.latencyMs };
+    } catch (err) {
+      state[key] = { status: 'ERROR', message: 'Network error: ' + err.message, latencyMs: null };
+    }
+    renderGrid();
+    document.getElementById('lastChecked').textContent = 'Last checked: ' + new Date().toLocaleTimeString();
+  }
+
+  async function testAll() {
+    const btn = document.getElementById('refreshAllBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Testing…';
+
+    INTEGRATIONS.forEach(i => { state[i.key] = { status: 'loading', message: 'Testing…', latencyMs: null }; });
+    renderGrid();
+
+    try {
+      const res = await fetch(`${API_BASE}/api/integrations/status`);
+      const data = await res.json();
+      INTEGRATIONS.forEach(i => {
+        const r = data.results?.[i.key];
+        if (r) {
+          state[i.key] = { status: r.status || (r.ok ? 'CONNECTED' : 'ERROR'), message: r.message, latencyMs: r.latencyMs };
+        }
+      });
+      document.getElementById('lastChecked').textContent = 'Last checked: ' + new Date().toLocaleTimeString();
+    } catch (err) {
+      INTEGRATIONS.forEach(i => { state[i.key] = { status: 'ERROR', message: 'Network error: ' + err.message, latencyMs: null }; });
+    }
+
+    renderGrid();
+    btn.disabled = false;
+    btn.textContent = '↻ Test All';
+  }
+
+  async function loadCredsDocs() {
+    try {
+      const res = await fetch(`${API_BASE}/api/integrations/credentials`);
+      const data = await res.json();
+      const section = document.getElementById('credsSection');
+      section.innerHTML = data.integrations.map(integ => `
+        <div style="margin-bottom:24px">
+          <div style="font-weight:600;margin-bottom:8px">${integ.name}</div>
+          <table class="creds-table" style="margin-bottom:6px">
+            <thead>
+              <tr>
+                <th>Env Variable</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${integ.required_env_vars.map(v => `
+                <tr>
+                  <td><span class="var-name">${v.var}</span></td>
+                  <td><span class="required-badge required">required</span></td>
+                  <td style="color:var(--muted)">${v.description}</td>
+                </tr>
+              `).join('')}
+              ${(integ.optional_env_vars || []).map(v => `
+                <tr>
+                  <td><span class="var-name">${v.var}</span></td>
+                  <td><span class="required-badge optional">optional</span></td>
+                  <td style="color:var(--muted)">${v.description}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div style="font-size:0.78rem;color:var(--muted);margin-left:4px">📝 ${integ.setup_notes}</div>
+          <a href="${integ.docs}" target="_blank" rel="noopener" style="font-size:0.78rem;color:var(--blue);text-decoration:none">📖 ${integ.docs} ↗</a>
+        </div>
+      `).join('');
+    } catch (err) {
+      document.getElementById('credsSection').innerHTML = `<div style="color:var(--red)">Failed to load credentials docs: ${err.message}</div>`;
+    }
+  }
+
+  // Init
+  renderGrid();
+  loadCredsDocs();
+</script>
+
+</body>
+</html>
