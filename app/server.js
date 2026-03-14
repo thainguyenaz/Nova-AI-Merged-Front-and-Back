@@ -20,6 +20,17 @@ const auditRoutes = require('./modules/audit/auditRoutes');
 const app = express();
 app.use(express.json({ limit: '1mb' }));
 
+// Enable CORS
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // ========== SERVE FRONTEND STATIC FILES FIRST ==========
 const frontendPath = path.join(__dirname, '../public-frontend');
 app.use(express.static(frontendPath));
