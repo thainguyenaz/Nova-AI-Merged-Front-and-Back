@@ -457,6 +457,27 @@
       .toggle-grid { grid-template-columns: 1fr; }
       .staff-row { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
     }
+
+    /* ── LOGOUT BUTTON ──────────────────────── */
+    .logout-nav-btn {
+      margin-left: auto;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 5px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      letter-spacing: 0.02em;
+    }
+    .logout-nav-btn:hover {
+      background: #FFF5F5;
+      border-color: #FEB2B2;
+      color: var(--danger);
+    }
   </style>
 </head>
 <body>
@@ -465,6 +486,7 @@
 <nav class="top-nav">
   <a href="/" class="logo">Nova AI</a>
   <span class="badge">Setup Wizard</span>
+  <button class="logout-nav-btn" onclick="handleLogout()" title="Sign out and return to signup">↩ Logout</button>
 </nav>
 
 <div class="wizard-wrapper">
@@ -1221,6 +1243,23 @@ function toast(msg, type = 'info') {
   el.className = `show ${type}`;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.className = ''; }, 3000);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  LOGOUT
+// ══════════════════════════════════════════════════════════════
+function handleLogout() {
+  // Clear all Nova auth + session keys from localStorage
+  const keysToRemove = [
+    'nova_refresh_token', 'nova_access_token', 'nova_user',
+    'nova_industry_type', 'nova_industry_bundle_key',
+    'accessToken', 'refreshToken'
+  ];
+  keysToRemove.forEach(k => localStorage.removeItem(k));
+  // Clear sessionStorage entirely
+  sessionStorage.clear();
+  // Redirect to app root (React will detect no token → show signup)
+  window.location.href = '/';
 }
 </script>
 </body>

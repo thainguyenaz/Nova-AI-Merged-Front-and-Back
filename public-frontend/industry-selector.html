@@ -260,9 +260,36 @@
       .logo { font-size: 1.6rem; }
       .heading { font-size: 1.4rem; }
     }
+
+    /* ── LOGOUT BUTTON ──────────────────────── */
+    .logout-btn {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.5);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 100;
+      letter-spacing: 0.02em;
+    }
+    .logout-btn:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.8);
+    }
   </style>
 </head>
 <body>
+  <!-- LOGOUT BUTTON -->
+  <button class="logout-btn" onclick="handleLogout()" title="Sign out and return to signup">↩ Logout</button>
+
   <div class="container">
     <div class="header">
       <div class="logo">Nova AI</div>
@@ -425,6 +452,20 @@
     }
 
     loadIndustries();
+
+    function handleLogout() {
+      // Clear all Nova auth + session keys from localStorage
+      const keysToRemove = [
+        'nova_refresh_token', 'nova_access_token', 'nova_user',
+        'nova_industry_type', 'nova_industry_bundle_key',
+        'accessToken', 'refreshToken'
+      ];
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+      // Clear sessionStorage entirely
+      sessionStorage.clear();
+      // Redirect to app root (React will detect no token → show signup)
+      window.location.href = '/';
+    }
   </script>
 </body>
 </html>
