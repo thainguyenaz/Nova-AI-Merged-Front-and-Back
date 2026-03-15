@@ -62,6 +62,7 @@
       // New accounts won't have a tenantId yet (assigned after onboarding), but they're
       // still real users. We detect auth by presence of nova_user with an id, or a refresh token.
       var _isRealUser = false;
+      var _isDemoAccount = false;
       try {
         var _novaUser = JSON.parse(localStorage.getItem('nova_user') || 'null');
         var _hasRefreshToken = !!localStorage.getItem('nova_refresh_token');
@@ -69,11 +70,30 @@
           _isRealUser = true;
           console.log('[Nova] Authenticated user detected — skipping demo inventory injection.');
         }
+        // Demo accounts: email local-part (before @) contains "demo" or "test" → still show demo data
+        // Only match local part to avoid false positives (e.g., user@test.com)
+        if (_novaUser && _novaUser.email) {
+          var _localPart = (_novaUser.email.split('@')[0] || '').toLowerCase();
+          if (/demo|test/.test(_localPart)) {
+            _isDemoAccount = true;
+            console.log('[Nova] Demo account detected (' + _novaUser.email + ') — demo data will be shown.');
+          }
+        }
       } catch(e) { /* ignore parse errors */ }
+
+      // Global demo-data gate:
+      //   true  = show demo data (unauthenticated visitor or demo/test account)
+      //   false = blank data (real authenticated user)
+      // Bundle code checks: window.__NOVA_SHOW_DEMO===false to suppress hardcoded demo arrays
+      var _showDemo = !_isRealUser || _isDemoAccount;
+      window.__NOVA_SHOW_DEMO = _showDemo;
+      if (_isRealUser && !_isDemoAccount) {
+        console.log('[Nova] __NOVA_SHOW_DEMO=false — all pages will show empty data for real user.');
+      }
 
       // Industry-specific demo inventory for the inventory module
       // (only injected for demo/unauthenticated users — real users get blank data from the API)
-      window.__NOVA_DEMO_INVENTORY = _isRealUser ? {} : {
+      window.__NOVA_DEMO_INVENTORY = (_isRealUser && !_isDemoAccount) ? {} : {
         day_spa: [
           {id:"sp01",name:"Massage Oil — Lavender 1L",brand:"Biotone",cat:"💆 Massage Supplies",sku:"MASS-LAV-1L",unit:"Bottle 1L",qty:8,reorder:3,cost:22,retail:45,lot:"BT-2024-A1",batch:"SP-24-A",exp:"2026-06-01",status:"ok",notes:"Best seller"},
           {id:"sp02",name:"Massage Oil — Unscented 1L",brand:"Biotone",cat:"💆 Massage Supplies",sku:"MASS-UNS-1L",unit:"Bottle 1L",qty:6,reorder:3,cost:20,retail:40,lot:"BT-2024-A2",batch:"SP-24-B",exp:"2026-06-01",status:"ok",notes:""},
