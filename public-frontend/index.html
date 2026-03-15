@@ -226,6 +226,81 @@
       }
     })();
     </script>
+
+    <!-- Nova API Fetch Interceptor — injects X-Nova-Industry + correct tenant/facility headers -->
+    <script>
+    (function() {
+      // Industry → tenant/facility mapping (mirrors backend INDUSTRY_CONTEXT_MAP)
+      var INDUSTRY_TENANT_MAP = {
+        'medspa':      { tenantId: 'tenant-a',       facilityId: 'facility-main'    },
+        'barber':      { tenantId: 'tenant-barber',  facilityId: 'facility-barber'  },
+        'barbershop':  { tenantId: 'tenant-barber',  facilityId: 'facility-barber'  },
+        'salon':       { tenantId: 'tenant-salon',   facilityId: 'facility-salon'   },
+        'hair_salon':  { tenantId: 'tenant-salon',   facilityId: 'facility-salon'   },
+        'spa':         { tenantId: 'tenant-spa',     facilityId: 'facility-spa'     },
+        'day_spa':     { tenantId: 'tenant-spa',     facilityId: 'facility-spa'     },
+        'clinic':      { tenantId: 'tenant-clinic',  facilityId: 'facility-clinic'  },
+        'esthetics':   { tenantId: 'tenant-clinic',  facilityId: 'facility-clinic'  },
+        'fitness':     { tenantId: 'tenant-fitness', facilityId: 'facility-fitness' },
+        'weight_loss': { tenantId: 'tenant-fitness', facilityId: 'facility-fitness' },
+        'peptide_hrt': { tenantId: 'tenant-peptide', facilityId: 'facility-peptide' },
+        'nail_salon':  { tenantId: 'tenant-a',       facilityId: 'facility-main'    }
+      };
+
+      var _nativeFetch = window.fetch;
+
+      window.fetch = function(input, init) {
+        // Determine URL string
+        var url = (typeof input === 'string') ? input : (input && input.url) ? input.url : '';
+
+        // Only intercept /api/ calls (relative or absolute)
+        if (url.indexOf('/api/') === -1 && url.indexOf('/api/') === -1) {
+          return _nativeFetch.apply(this, arguments);
+        }
+
+        // Get current industry
+        var rawIndustry = localStorage.getItem('nova_industry_type') || 'medspa';
+        var bundleKey   = localStorage.getItem('nova_industry_bundle_key') || rawIndustry;
+        // Prefer the bundle key (canonical backend key) over the raw selector key
+        var industry = INDUSTRY_TENANT_MAP[bundleKey] ? bundleKey : (INDUSTRY_TENANT_MAP[rawIndustry] ? rawIndustry : 'medspa');
+        var tenantCtx = INDUSTRY_TENANT_MAP[industry] || INDUSTRY_TENANT_MAP['medspa'];
+
+        // Build updated init with injected headers
+        var newInit = Object.assign({}, init || {});
+        var existingHeaders = newInit.headers || {};
+
+        // Normalize headers to plain object
+        var headersObj = {};
+        if (existingHeaders instanceof Headers) {
+          existingHeaders.forEach(function(val, key) { headersObj[key] = val; });
+        } else if (typeof existingHeaders === 'object') {
+          headersObj = Object.assign({}, existingHeaders);
+        }
+
+        // Inject X-Nova-Industry
+        headersObj['X-Nova-Industry'] = industry;
+
+        // Override x-tenant-id and x-facility-id to match selected industry
+        if (headersObj['x-tenant-id'] || headersObj['X-Tenant-Id']) {
+          headersObj['x-tenant-id'] = tenantCtx.tenantId;
+          headersObj['x-facility-id'] = tenantCtx.facilityId;
+          // Remove uppercase variants (normalize)
+          delete headersObj['X-Tenant-Id'];
+          delete headersObj['X-Facility-Id'];
+        }
+
+        newInit.headers = headersObj;
+
+        if (industry !== 'medspa') {
+          console.log('[Nova Fetch Interceptor] ' + url + ' → industry=' + industry + ' tenant=' + tenantCtx.tenantId);
+        }
+
+        return _nativeFetch.call(this, input, newInit);
+      };
+
+      console.log('[Nova] Fetch interceptor installed — industry:', localStorage.getItem('nova_industry_type') || 'medspa');
+    })();
+    </script>
   </body>
 </html>
 <style>

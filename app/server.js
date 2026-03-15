@@ -19,6 +19,7 @@ const auditRoutes = require('./modules/audit/auditRoutes');
 const industryRoutes = require('./modules/industry/industryRoutes');
 const integrationRoutes = require('./modules/integrations/integrationRoutes');
 const onboardingRoutes = require('./modules/onboarding/onboardingRoutes');
+const inventoryRoutes = require('./modules/inventory/inventoryRoutes');
 
 const app = express();
 app.use(express.json({ limit: '1mb' }));
@@ -26,7 +27,7 @@ app.use(express.json({ limit: '1mb' }));
 // Enable CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Tenant-Id, X-Facility-Id, X-Nova-Industry');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
@@ -56,6 +57,7 @@ app.use('/api/patients', patientRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/encounters', encounterRoutes);
 app.use('/api/audit-logs', auditRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 // ========== CALENDAR PAGE ROUTE ================================
 app.get('/calendar', (req, res) => {
