@@ -44,8 +44,8 @@
       var bundleType = localStorage.getItem('nova_industry_bundle_key') || INDUSTRY_KEY_MAP[rawType] || rawType;
 
       // Force override __NOVA_BIZ__ to use selected industry
-      console.log('[Nova] Industry Type:', industryType, 'Bundle Type:', bundleType);
-      console.log('[Nova] localStorage peptide_hrt:', localStorage.getItem('nova_industry_type'));
+      console.log('[Nova] Industry Type:', rawType, 'Bundle Type:', bundleType);
+      console.log('[Nova] nova_industry_type:', localStorage.getItem('nova_industry_type'));
       
       var _novaBizValue = { primaryType: bundleType, types: [bundleType] };
       Object.defineProperty(window, '__NOVA_BIZ__', {
