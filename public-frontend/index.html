@@ -58,8 +58,20 @@
         }
       });
 
+      // ── Real-user guard: if user has a non-demo tenant, skip demo inventory ──
+      var DEMO_TENANT_IDS = ['tenant-a','tenant-barber','tenant-salon','tenant-spa','tenant-clinic','tenant-fitness','tenant-peptide'];
+      var _isRealUser = false;
+      try {
+        var _novaUser = JSON.parse(localStorage.getItem('nova_user') || 'null');
+        if (_novaUser && _novaUser.tenantId && DEMO_TENANT_IDS.indexOf(_novaUser.tenantId) === -1) {
+          _isRealUser = true;
+          console.log('[Nova] Real user detected (tenant=' + _novaUser.tenantId + ') — skipping demo inventory.');
+        }
+      } catch(e) { /* ignore parse errors */ }
+
       // Industry-specific demo inventory for the inventory module
-      window.__NOVA_DEMO_INVENTORY = {
+      // (only injected for demo/unauthenticated users — real users get blank data from the API)
+      window.__NOVA_DEMO_INVENTORY = _isRealUser ? {} : {
         day_spa: [
           {id:"sp01",name:"Massage Oil — Lavender 1L",brand:"Biotone",cat:"💆 Massage Supplies",sku:"MASS-LAV-1L",unit:"Bottle 1L",qty:8,reorder:3,cost:22,retail:45,lot:"BT-2024-A1",batch:"SP-24-A",exp:"2026-06-01",status:"ok",notes:"Best seller"},
           {id:"sp02",name:"Massage Oil — Unscented 1L",brand:"Biotone",cat:"💆 Massage Supplies",sku:"MASS-UNS-1L",unit:"Bottle 1L",qty:6,reorder:3,cost:20,retail:40,lot:"BT-2024-A2",batch:"SP-24-B",exp:"2026-06-01",status:"ok",notes:""},

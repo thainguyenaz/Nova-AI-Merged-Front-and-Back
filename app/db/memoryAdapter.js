@@ -357,7 +357,8 @@ function resolveIndustryContext(context) {
 }
 
 async function listPatients(context) {
-  const { tenantId, facilityId } = resolveIndustryContext(context);
+  // Use context tenantId/facilityId directly — resolveIndustryContext is handled upstream in context.js middleware
+  const { tenantId, facilityId } = context;
   return state.patients.filter(p => p.tenant_id === tenantId && p.facility_id === facilityId);
 }
 
@@ -372,7 +373,8 @@ async function createPatient({ tenantId, facilityId, mrn, firstName, lastName, d
 
 // ─── Appointments ─────────────────────────────────────────────────────────────
 async function listAppointments(context) {
-  const { tenantId, facilityId } = resolveIndustryContext(context);
+  // Use context tenantId/facilityId directly — resolved upstream in context.js middleware
+  const { tenantId, facilityId } = context;
   return state.appointments.filter(a => a.tenant_id === tenantId && a.facility_id === facilityId);
 }
 
@@ -596,6 +598,31 @@ async function updateOnboardingStep(id, step, data) {
   return session;
 }
 
+// ─── Demo account detection ───────────────────────────────────────────────────
+// Pre-seeded demo tenant IDs (shared demo environment)
+// Also includes dynamically provisioned demo tenants (added at runtime)
+const DEMO_TENANT_IDS = new Set([
+  'tenant-a', 'tenant-barber', 'tenant-salon', 'tenant-spa',
+  'tenant-clinic', 'tenant-fitness', 'tenant-peptide'
+]);
+
+function isDemoEmail(email) {
+  return /demo|test/i.test(email || '');
+}
+
+function isDemoTenant(tenantId) {
+  return DEMO_TENANT_IDS.has(tenantId);
+}
+
+async function updateUserTenant(userId, tenantId, facilityId) {
+  const user = state.users.find(u => u.id === userId);
+  if (!user) return null;
+  user.tenant_id = tenantId;
+  user.facility_id = facilityId;
+  user.updated_at = now();
+  return user;
+}
+
 async function finalizeOnboarding(id) {
   const session = state.onboarding_sessions.find(s => s.id === id);
   if (!session) return null;
@@ -629,6 +656,26 @@ async function finalizeOnboarding(id) {
   });
   state.facilities.push(facility);
 
+  // Link the onboarding user to their new tenant/facility and assign admin role
+  const sessionUserId = session.userId || session.user_id;
+  if (sessionUserId) {
+    const ownerUser = state.users.find(u => u.id === sessionUserId);
+    if (ownerUser) {
+      ownerUser.tenant_id = tenantId;
+      ownerUser.facility_id = facilityId;
+      ownerUser.role = 'admin'; // Account owner gets admin role
+      ownerUser.updated_at = now();
+      // Assign to user_roles table as well
+      const existingRole = state.user_roles.find(r => r.user_id === sessionUserId);
+      if (!existingRole) {
+        state.user_roles.push({ user_id: sessionUserId, role_code: 'admin' });
+      } else {
+        existingRole.role_code = 'admin';
+      }
+      console.log(`[Onboarding] Linked user ${sessionUserId} → tenant=${tenantId} facility=${facilityId} role=admin`);
+    }
+  }
+
   // Staff
   const staffList = (steps[4] || {}).staff || [];
   const createdStaff = [];
@@ -649,9 +696,16 @@ async function finalizeOnboarding(id) {
     createdStaff.push(u);
   }
 
-  // Demo data
+  // Demo data — only seed for demo/test accounts, NOT for real new users
+  const ownerUser = sessionUserId ? state.users.find(u => u.id === sessionUserId) : null;
+  const ownerEmail = ownerUser?.email || '';
   const demoData = steps[6] || {};
-  if (demoData.loadDemo) {
+  const shouldLoadDemo = demoData.loadDemo && isDemoEmail(ownerEmail);
+
+  if (shouldLoadDemo) {
+    // Mark this tenant as a demo tenant so inventory/other static data is served
+    DEMO_TENANT_IDS.add(tenantId);
+
     const demoPatients = [
       { mrn: 'DEMO-001', first_name: 'Jane', last_name: 'Doe', dob: '1985-04-12' },
       { mrn: 'DEMO-002', first_name: 'John', last_name: 'Smith', dob: '1979-09-30' },
@@ -677,7 +731,7 @@ async function finalizeOnboarding(id) {
   session.provisioned = { tenantId, facilityId, staffCount: createdStaff.length };
   session.updated_at = now();
 
-  return { session, tenantId, facilityId, staffCount: createdStaff.length, demoDataLoaded: !!(demoData.loadDemo) };
+  return { session, tenantId, facilityId, staffCount: createdStaff.length, demoDataLoaded: shouldLoadDemo };
 }
 
 // ─── Inventory ────────────────────────────────────────────────────────────────
@@ -759,7 +813,11 @@ DEMO_INVENTORY.esthetics   = DEMO_INVENTORY.clinic;
 DEMO_INVENTORY.weight_loss = DEMO_INVENTORY.fitness;
 DEMO_INVENTORY.nail_salon  = DEMO_INVENTORY.spa;
 
-async function listInventory({ industry }) {
+async function listInventory({ industry, tenantId }) {
+  // Only return demo inventory for pre-seeded demo tenants or unauthenticated requests
+  if (tenantId && !isDemoTenant(tenantId)) {
+    return []; // Real user — blank inventory
+  }
   const key = industry || 'medspa';
   return DEMO_INVENTORY[key] || DEMO_INVENTORY.medspa;
 }
@@ -775,6 +833,9 @@ module.exports = {
   revokeRefreshToken,
   updateUserIndustry,
   getUserIndustry,
+  updateUserTenant,
+  isDemoTenant,
+  isDemoEmail,
   listInventory,
   listPatients,
   createPatient,

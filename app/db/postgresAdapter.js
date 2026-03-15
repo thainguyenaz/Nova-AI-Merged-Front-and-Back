@@ -84,6 +84,14 @@ async function updateUserIndustry(userId, industryType) {
   return rows[0] || null;
 }
 
+async function updateUserTenant(userId, tenantId, facilityId) {
+  const rows = await q(
+    'UPDATE users SET tenant_id = $1, facility_id = $2, updated_at = NOW() WHERE id = $3 RETURNING *',
+    [tenantId, facilityId, userId]
+  );
+  return rows[0] || null;
+}
+
 async function getUserIndustry(userId) {
   const rows = await q(
     'SELECT id, email, first_name, last_name, industry_type FROM users WHERE id = $1',
@@ -144,7 +152,8 @@ function resolveIndustryContext(context) {
 }
 
 async function listPatients(context) {
-  const { tenantId, facilityId } = resolveIndustryContext(context);
+  // Use context tenantId/facilityId directly — resolved upstream in context.js middleware
+  const { tenantId, facilityId } = context;
   return q('SELECT * FROM patients WHERE tenant_id=$1 AND facility_id=$2 ORDER BY created_at DESC', [tenantId, facilityId]);
 }
 
@@ -156,7 +165,8 @@ async function createPatient({ tenantId, facilityId, mrn, firstName, lastName, d
 
 // ─── Appointments ─────────────────────────────────────────────────────────────
 async function listAppointments(context) {
-  const { tenantId, facilityId } = resolveIndustryContext(context);
+  // Use context tenantId/facilityId directly — resolved upstream in context.js middleware
+  const { tenantId, facilityId } = context;
   return q(`SELECT a.*,
       CONCAT(p.first_name, ' ', p.last_name) AS patient_name,
       pr.name AS provider_name,
@@ -423,9 +433,176 @@ DEMO_INVENTORY.esthetics   = DEMO_INVENTORY.clinic;
 DEMO_INVENTORY.weight_loss = DEMO_INVENTORY.fitness;
 DEMO_INVENTORY.nail_salon  = DEMO_INVENTORY.spa;
 
-async function listInventory({ industry }) {
+// Pre-seeded demo tenant IDs — real user tenants are UUIDs, not these static strings
+// Also includes dynamically provisioned demo tenants (added at runtime via finalizeOnboarding)
+const DEMO_TENANT_IDS_PG = new Set([
+  'tenant-a', 'tenant-barber', 'tenant-salon', 'tenant-spa',
+  'tenant-clinic', 'tenant-fitness', 'tenant-peptide'
+]);
+
+async function listInventory({ industry, tenantId }) {
+  // Only return demo inventory for pre-seeded demo tenants or unauthenticated requests
+  if (tenantId && !DEMO_TENANT_IDS_PG.has(tenantId)) {
+    return []; // Real user — blank inventory
+  }
   const key = industry || 'medspa';
   return DEMO_INVENTORY[key] || DEMO_INVENTORY.medspa;
+}
+
+// ─── Onboarding (postgres implementation) ────────────────────────────────────
+// Demo detection helpers
+function isDemoEmail(email) {
+  return /demo|test/i.test(email || '');
+}
+
+async function createOnboardingSession({ userId }) {
+  // Try DB table first, fall back to in-memory
+  try {
+    const rows = await q(
+      `INSERT INTO onboarding_sessions (user_id, status, current_step, steps)
+       VALUES ($1, 'in_progress', 1, $2::jsonb)
+       RETURNING *`,
+      [userId || null, JSON.stringify({ 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null })]
+    );
+    return rows[0];
+  } catch (err) {
+    // Fall back to in-memory if table doesn't exist
+    const { randomUUID } = require('crypto');
+    const session = {
+      id: randomUUID(),
+      user_id: userId || null,
+      status: 'in_progress',
+      current_step: 1,
+      steps: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    if (!global._pgOnboardingSessions) global._pgOnboardingSessions = [];
+    global._pgOnboardingSessions.push(session);
+    return session;
+  }
+}
+
+async function getOnboardingSession(id) {
+  try {
+    const rows = await q('SELECT * FROM onboarding_sessions WHERE id=$1', [id]);
+    return rows[0] || null;
+  } catch {
+    return (global._pgOnboardingSessions || []).find(s => s.id === id) || null;
+  }
+}
+
+async function updateOnboardingStep(id, step, data) {
+  try {
+    const rows = await q(
+      `UPDATE onboarding_sessions
+       SET steps = steps || jsonb_build_object($2::text, $3::jsonb),
+           current_step = GREATEST(current_step, $4::int),
+           updated_at = NOW()
+       WHERE id=$1 RETURNING *`,
+      [id, String(step), JSON.stringify(data), Number(step)]
+    );
+    return rows[0] || null;
+  } catch {
+    const session = (global._pgOnboardingSessions || []).find(s => s.id === id);
+    if (!session) return null;
+    session.steps[step] = data;
+    session.current_step = Math.max(session.current_step, Number(step));
+    session.updated_at = new Date().toISOString();
+    return session;
+  }
+}
+
+async function finalizeOnboarding(id) {
+  let session;
+  try {
+    const rows = await q('SELECT * FROM onboarding_sessions WHERE id=$1', [id]);
+    session = rows[0];
+  } catch {
+    session = (global._pgOnboardingSessions || []).find(s => s.id === id);
+  }
+  if (!session) return null;
+
+  const { randomUUID } = require('crypto');
+  const steps = typeof session.steps === 'string' ? JSON.parse(session.steps) : (session.steps || {});
+  const companyInfo = steps[2] || {};
+  const tenantId = randomUUID();
+  const facilityId = randomUUID();
+  const businessType = (steps[1] || {}).type || 'medspa';
+
+  // Create tenant
+  try {
+    await q(
+      `INSERT INTO tenants (id, name, industry_type, email, phone, address, city, state, zip, website)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      [tenantId, companyInfo.companyName || 'My Business', businessType,
+       companyInfo.email || null, companyInfo.phone || null, companyInfo.address || null,
+       companyInfo.city || null, companyInfo.state || null, companyInfo.zip || null, companyInfo.website || null]
+    );
+    await q(
+      'INSERT INTO facilities (id, tenant_id, name) VALUES ($1,$2,$3)',
+      [facilityId, tenantId, companyInfo.companyName || 'Main Location']
+    );
+  } catch (err) {
+    console.log('[Onboarding] Could not create tenant/facility in DB:', err.message);
+  }
+
+  // Link user to their new tenant
+  const sessionUserId = session.userId || session.user_id;
+  if (sessionUserId) {
+    try {
+      await q(
+        'UPDATE users SET tenant_id=$1, facility_id=$2, updated_at=NOW() WHERE id=$3',
+        [tenantId, facilityId, sessionUserId]
+      );
+      console.log(`[Onboarding] Linked user ${sessionUserId} → tenant=${tenantId}`);
+    } catch (err) {
+      console.log('[Onboarding] Could not update user tenant:', err.message);
+    }
+  }
+
+  // Demo data — only for demo/test emails
+  const userRows = sessionUserId ? await q('SELECT email FROM users WHERE id=$1', [sessionUserId]).catch(() => []) : [];
+  const ownerEmail = userRows[0]?.email || '';
+  const demoData = steps[6] || {};
+  const shouldLoadDemo = demoData.loadDemo && isDemoEmail(ownerEmail);
+
+  if (shouldLoadDemo) {
+    // Mark as demo tenant so inventory/static data is served
+    DEMO_TENANT_IDS_PG.add(tenantId);
+    try {
+      const demoPatients = [
+        { mrn: 'DEMO-001', first_name: 'Jane', last_name: 'Doe', dob: '1985-04-12' },
+        { mrn: 'DEMO-002', first_name: 'John', last_name: 'Smith', dob: '1979-09-30' },
+        { mrn: 'DEMO-003', first_name: 'Emily', last_name: 'Chen', dob: '1992-01-17' },
+      ];
+      for (const p of demoPatients) {
+        await q(
+          'INSERT INTO patients (tenant_id, facility_id, mrn, first_name, last_name, dob) VALUES ($1,$2,$3,$4,$5,$6)',
+          [tenantId, facilityId, p.mrn, p.first_name, p.last_name, p.dob]
+        ).catch(() => {});
+      }
+    } catch {}
+  }
+
+  // Mark completed
+  try {
+    await q(
+      "UPDATE onboarding_sessions SET status='completed', completed_at=NOW(), updated_at=NOW() WHERE id=$1",
+      [id]
+    );
+  } catch {
+    if (session) {
+      session.status = 'completed';
+      session.completed_at = new Date().toISOString();
+      session.updated_at = new Date().toISOString();
+    }
+  }
+
+  const provisioned = { tenantId, facilityId, staffCount: 0 };
+  if (session) session.provisioned = provisioned;
+
+  return { session, tenantId, facilityId, staffCount: 0, demoDataLoaded: shouldLoadDemo };
 }
 
 module.exports = {
@@ -436,6 +613,8 @@ module.exports = {
   createUser,
   updateUserIndustry,
   getUserIndustry,
+  updateUserTenant,
+  isDemoEmail,
   saveRefreshToken,
   getRefreshToken,
   revokeRefreshToken,
@@ -452,5 +631,10 @@ module.exports = {
   listEncounters,
   createEncounter,
   listAuditLogs,
-  appendAuditLog
+  appendAuditLog,
+  // Onboarding
+  createOnboardingSession,
+  getOnboardingSession,
+  updateOnboardingStep,
+  finalizeOnboarding,
 };

@@ -9,8 +9,9 @@ const { repo } = require('../../db');
 router.get('/', async (req, res, next) => {
   try {
     const industry = req.context?.industry || null;
-    const items = await repo.listInventory({ industry });
-    console.log(`[Inventory] GET /api/inventory industry=${industry} → ${items.length} items`);
+    const tenantId = req.context?.tenantId || null;
+    const items = await repo.listInventory({ industry, tenantId });
+    console.log(`[Inventory] GET /api/inventory industry=${industry} tenant=${tenantId} → ${items.length} items`);
     res.json({
       data: items,
       meta: {

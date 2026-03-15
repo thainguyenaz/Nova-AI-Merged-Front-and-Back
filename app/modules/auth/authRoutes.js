@@ -87,9 +87,15 @@ router.post('/login', async (req, res, next) => {
       return res.status(401).json({ error: 'INVALID_CREDENTIALS' });
     }
 
-    // Issue tokens — include role in JWT so RBAC works without DB lookup
+    // Issue tokens — include role + tenant context in JWT so RBAC and routing work without extra DB lookups
     const accessToken = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role || null },
+      {
+        userId: user.id,
+        email: user.email,
+        role: user.role || null,
+        tenantId: user.tenant_id || null,
+        facilityId: user.facility_id || null,
+      },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRY }
     );
@@ -101,7 +107,16 @@ router.post('/login', async (req, res, next) => {
     await repo.saveRefreshToken(user.id, refreshToken);
 
     res.json({
-      user: { id: user.id, email: user.email, firstName: user.first_name || user.firstName || '', lastName: user.last_name || user.lastName || '', industryType: user.industry_type || 'medspa', role: user.role || null },
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.first_name || user.firstName || '',
+        lastName: user.last_name || user.lastName || '',
+        industryType: user.industry_type || 'medspa',
+        role: user.role || null,
+        tenantId: user.tenant_id || null,
+        facilityId: user.facility_id || null,
+      },
       accessToken,
       refreshToken,
       expiresIn: 3600,
