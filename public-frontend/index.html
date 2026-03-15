@@ -43,25 +43,20 @@
       var rawType = localStorage.getItem('nova_industry_type') || 'medspa';
       var bundleType = localStorage.getItem('nova_industry_bundle_key') || INDUSTRY_KEY_MAP[rawType] || rawType;
 
-      // Pre-populate __NOVA_BIZ__ primaryType so inventory patch fires correctly.
-      // React sets window.__NOVA_BIZ__ after the user completes onboarding.
-      // When using the industry-selector flow, we intercept the setter to enforce the
-      // selected industry type if React would default back to "medspa".
-      if (bundleType && bundleType !== 'medspa') {
-        var _novaBizValue = null;
-        Object.defineProperty(window, '__NOVA_BIZ__', {
-          configurable: true,
-          enumerable: true,
-          get: function() { return _novaBizValue; },
-          set: function(v) {
-            // Only override if React didn't already get a specific industry from onboarding
-            if (v && (v.primaryType === 'medspa' || !v.primaryType)) {
-              v = Object.assign({}, v, { primaryType: bundleType, types: [bundleType] });
-            }
-            _novaBizValue = v;
-          }
-        });
-      }
+      // Force override __NOVA_BIZ__ to use selected industry
+      console.log('[Nova] Industry Type:', industryType, 'Bundle Type:', bundleType);
+      console.log('[Nova] localStorage peptide_hrt:', localStorage.getItem('nova_industry_type'));
+      
+      var _novaBizValue = { primaryType: bundleType, types: [bundleType] };
+      Object.defineProperty(window, '__NOVA_BIZ__', {
+        configurable: true,
+        enumerable: true,
+        get: function() { return _novaBizValue; },
+        set: function(v) {
+          console.log('[Nova] React set __NOVA_BIZ__, forcing override to:', bundleType);
+          _novaBizValue = Object.assign({}, v || {}, { primaryType: bundleType, types: [bundleType] });
+        }
+      });
 
       // Industry-specific demo inventory for the inventory module
       window.__NOVA_DEMO_INVENTORY = {
