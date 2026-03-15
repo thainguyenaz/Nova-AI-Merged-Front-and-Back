@@ -58,14 +58,16 @@
         }
       });
 
-      // ── Real-user guard: if user has a non-demo tenant, skip demo inventory ──
-      var DEMO_TENANT_IDS = ['tenant-a','tenant-barber','tenant-salon','tenant-spa','tenant-clinic','tenant-fitness','tenant-peptide'];
+      // ── Real-user guard: any authenticated user should NOT see demo inventory ──
+      // New accounts won't have a tenantId yet (assigned after onboarding), but they're
+      // still real users. We detect auth by presence of nova_user with an id, or a refresh token.
       var _isRealUser = false;
       try {
         var _novaUser = JSON.parse(localStorage.getItem('nova_user') || 'null');
-        if (_novaUser && _novaUser.tenantId && DEMO_TENANT_IDS.indexOf(_novaUser.tenantId) === -1) {
+        var _hasRefreshToken = !!localStorage.getItem('nova_refresh_token');
+        if (_hasRefreshToken || (_novaUser && (_novaUser.id || _novaUser.userId))) {
           _isRealUser = true;
-          console.log('[Nova] Real user detected (tenant=' + _novaUser.tenantId + ') — skipping demo inventory.');
+          console.log('[Nova] Authenticated user detected — skipping demo inventory injection.');
         }
       } catch(e) { /* ignore parse errors */ }
 

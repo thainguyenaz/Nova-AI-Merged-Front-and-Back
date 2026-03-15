@@ -27,17 +27,22 @@ function requireContext(req, res, next) {
   let tenantId = req.header('x-tenant-id');
   let facilityId = req.header('x-facility-id');
 
-  // ── Real user with their own tenant (non-demo) ──────────────────────────────
-  // If the JWT contains a tenantId that is NOT a pre-seeded demo tenant,
-  // use the user's own tenant — do NOT redirect them to demo data.
-  if (
-    req.user &&
-    req.user.tenantId &&
-    !DEMO_TENANT_IDS.has(req.user.tenantId)
-  ) {
-    tenantId = req.user.tenantId;
-    facilityId = req.user.facilityId || facilityId;
-    console.log(`[Context] Real user tenant → tenant=${tenantId} facility=${facilityId}`);
+  if (req.user) {
+    // ── Authenticated user — NEVER fall through to demo tenant mapping ────────
+    if (req.user.tenantId) {
+      // User has a tenant assigned (real or legacy demo)
+      tenantId = req.user.tenantId;
+      facilityId = req.user.facilityId || facilityId;
+      const label = DEMO_TENANT_IDS.has(tenantId) ? 'demo-tenant' : 'real-tenant';
+      console.log(`[Context] Auth user (${label}) → tenant=${tenantId} facility=${facilityId}`);
+    } else {
+      // ── Authenticated but no tenant yet (pre-onboarding / new account) ──────
+      // Use a per-user placeholder — all DB queries return empty data for unknown tenants.
+      // This ensures new accounts NEVER see demo data.
+      tenantId = `user-${req.user.userId}`;
+      facilityId = `user-${req.user.userId}`;
+      console.log(`[Context] Auth pre-onboarding user → tenant=${tenantId} (returns empty data)`);
+    }
   } else if (industry && INDUSTRY_CONTEXT_MAP[industry]) {
     // ── Demo / unauthenticated: map industry header to shared demo tenant ───
     const mapped = INDUSTRY_CONTEXT_MAP[industry];

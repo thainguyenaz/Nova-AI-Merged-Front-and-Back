@@ -26,13 +26,16 @@ router.get('/', async (req, res, next) => {
 
 /**
  * GET /api/inventory/:industry
- * Returns inventory for a specific industry (explicit URL param override).
+ * Returns inventory for a specific industry — BUT still respects the tenant context.
+ * Real users (non-demo tenants) always get empty data regardless of industry param.
  */
 router.get('/:industry', async (req, res, next) => {
   try {
     const industry = req.params.industry;
-    const items = await repo.listInventory({ industry });
-    console.log(`[Inventory] GET /api/inventory/${industry} → ${items.length} items`);
+    // Always pass tenantId from context so real users get blank data
+    const tenantId = req.context?.tenantId || null;
+    const items = await repo.listInventory({ industry, tenantId });
+    console.log(`[Inventory] GET /api/inventory/${industry} tenant=${tenantId} → ${items.length} items`);
     res.json({
       data: items,
       meta: {

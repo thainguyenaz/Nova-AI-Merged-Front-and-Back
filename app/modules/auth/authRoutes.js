@@ -29,7 +29,7 @@ router.post('/signup', async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Validate industry type
-    const VALID_INDUSTRIES = ['medspa', 'barber', 'salon', 'spa', 'clinic', 'fitness'];
+    const VALID_INDUSTRIES = ['medspa', 'barber', 'salon', 'spa', 'clinic', 'fitness', 'peptide_hrt'];
     const resolvedIndustry = VALID_INDUSTRIES.includes(industryType) ? industryType : 'medspa';
 
     // Create user
