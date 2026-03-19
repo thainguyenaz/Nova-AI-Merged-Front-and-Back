@@ -181,6 +181,11 @@ async function listAppointments(context) {
     ORDER BY a.starts_at ASC`, [tenantId, facilityId]);
 }
 
+async function listServices(context) {
+  const { tenantId, facilityId } = context;
+  return q('SELECT * FROM services WHERE tenant_id=$1 AND facility_id=$2 AND active=true ORDER BY name ASC', [tenantId, facilityId]);
+}
+
 async function createAppointment({ tenantId, facilityId, patientId, startsAt, serviceId, providerId, status, notes }) {
   // Look up patient/provider/service for denormalized fields
   const [pts, provs, svcs] = await Promise.all([
@@ -621,6 +626,7 @@ module.exports = {
   listProviders,
   getProvider,
   listInventory,
+  listServices,
   listPatients,
   createPatient,
   listAppointments,

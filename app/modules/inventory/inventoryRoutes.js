@@ -1,12 +1,13 @@
 const router = require('express').Router();
 const { repo } = require('../../db');
+const { requireRoutePermission } = require('../../middleware/rbac');
 
 /**
  * GET /api/inventory
  * Returns demo inventory items for the current industry context.
  * Industry is resolved from X-Nova-Industry header (via context middleware).
  */
-router.get('/', async (req, res, next) => {
+router.get('/', requireRoutePermission('GET /api/inventory'), async (req, res, next) => {
   try {
     const industry = req.context?.industry || null;
     const tenantId = req.context?.tenantId || null;
@@ -29,7 +30,7 @@ router.get('/', async (req, res, next) => {
  * Returns inventory for a specific industry — BUT still respects the tenant context.
  * Real users (non-demo tenants) always get empty data regardless of industry param.
  */
-router.get('/:industry', async (req, res, next) => {
+router.get('/:industry', requireRoutePermission('GET /api/inventory'), async (req, res, next) => {
   try {
     const industry = req.params.industry;
     // Always pass tenantId from context so real users get blank data

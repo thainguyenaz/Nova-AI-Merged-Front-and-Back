@@ -7,7 +7,8 @@ const POLICY = {
   'POST /api/appointments': ['admin', 'scheduler'],
   'GET /api/encounters': ['admin', 'clinician'],
   'POST /api/encounters': ['admin', 'clinician'],
-  'GET /api/audit-logs': ['admin']
+  'GET /api/audit-logs': ['admin'],
+  'GET /api/inventory': ['admin', 'clinician', 'scheduler']
 };
 
 function requireRoutePermission(routeKey) {

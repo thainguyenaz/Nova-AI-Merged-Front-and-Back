@@ -91,6 +91,27 @@
         console.log('[Nova] __NOVA_SHOW_DEMO=false — all pages will show empty data for real user.');
       }
 
+      // ── POS/Inventory Industry Filtering Fix ──────────────────────────────────
+      // Intercept fetch calls to filter services and inventory by industry
+      var originalFetch = window.fetch;
+      window.fetch = function() {
+        var url = arguments[0];
+        var options = arguments[1] || {};
+        
+        // 1. Filter Inventory by Industry
+        if (typeof url === 'string' && url.includes('/api/inventory') && !url.includes('?industry=')) {
+          var industry = localStorage.getItem('nova_industry_type') || 'medspa';
+          arguments[0] = url + (url.includes('?') ? '&' : '?') + 'industry=' + industry;
+        }
+        
+        // 2. Redirect Service List to Filtered Endpoint
+        if (typeof url === 'string' && url.endsWith('/api/catalog/services')) {
+          arguments[0] = url + '/list';
+        }
+
+        return originalFetch.apply(this, arguments);
+      };
+
       // Industry-specific demo inventory for the inventory module
       // (only injected for demo/unauthenticated users — real users get blank data from the API)
       window.__NOVA_DEMO_INVENTORY = (_isRealUser && !_isDemoAccount) ? {} : {

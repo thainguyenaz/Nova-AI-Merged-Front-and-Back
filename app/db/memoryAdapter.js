@@ -378,6 +378,15 @@ async function listAppointments(context) {
   return state.appointments.filter(a => a.tenant_id === tenantId && a.facility_id === facilityId);
 }
 
+async function listServices(context) {
+  const { tenantId, facilityId, industry } = context;
+  // If it's a demo tenant, we can filter by industry if provided
+  if (isDemoTenant(tenantId) && industry) {
+    return state.services.filter(s => s.business_type === industry || s.tenant_id === tenantId);
+  }
+  return state.services.filter(s => s.tenant_id === tenantId && s.facility_id === facilityId);
+}
+
 async function createAppointment({ tenantId, facilityId, patientId, startsAt, serviceId, providerId, status, notes }) {
   const patient = state.patients.find(p => p.id === patientId);
   const service = state.services.find(s => s.id === serviceId);
@@ -837,6 +846,7 @@ module.exports = {
   isDemoTenant,
   isDemoEmail,
   listInventory,
+  listServices,
   listPatients,
   createPatient,
   listProviders,
